@@ -3,83 +3,81 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aura and Essence Celestial It Girl Planner</title>
+    <title>Celestial It Girl Planner</title>
     <style>
-    body {
-        background-color: #fff0f5; /* Light blush pink background */
-        font-family: 'Arial', sans-serif;
-        color: #d63384; /* Celestial pink text */
-    }
-
-    nav ul {
-        display: flex;
-        list-style: none;
-        gap: 20px;
-        background: #ffb7c5; /* Soft pastel pink nav bar */
-        padding: 15px;
-        border-radius: 15px;
-    }
-
-    #dashboard-tools {
-        display: grid;
-        grid-template-columns: 1fr 1fr 1fr;
-        gap: 20px;
-        margin-top: 20px;
-    }
-
-    #todo-list, #sticky-notes, #sticker-gallery {
-        background: white;
-        padding: 20px;
-        border-radius: 20px;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        border: 2px solid #ffc0cb;
-    }
-
-    h1, h2 {
-        color: #ff69b4; /* Hot pink headings */
-    }
-</style>
+        body { background-color: #fff0f5; font-family: 'Arial', sans-serif; color: #d63384; margin: 0; padding: 20px; }
+        nav { background: #ffb7c5; padding: 15px; border-radius: 20px; display: flex; gap: 15px; justify-content: center; cursor: pointer; }
+        .page { display: none; margin-top: 20px; background: white; padding: 20px; border-radius: 20px; border: 2px solid #ffc0cb; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        h1, h2 { color: #ff69b4; }
+        textarea { width: 100%; height: 100px; border: 1px solid #ffc0cb; border-radius: 10px; padding: 10px; }
+    </style>
 </head>
 <body>
+
     <nav>
-        <ul>
-            <li>Dashboard</li>
-            <li>Journaling</li>
-            <li>Study Tools</li>
-            <li>Budget</li>
-        </ul>
+        <div onclick="showPage('dashboard')">Dashboard</div>
+        <div onclick="showPage('journaling')">Journaling</div>
+        <div onclick="showPage('daily')">Daily Planner</div>
     </nav>
 
-    <main>
-<main>
-    <section id="welcome-message">
-        <h1>Welcome, beautiful!</h1>
-    </section>
-
-    <div id="dashboard-tools">
-        <section id="todo-list">
-            <h2>To-Do List</h2>
-            <input type="text" id="taskInput" placeholder="Add a task...">
-            <button onclick="addTask()">Add</button>
-            <ul id="taskList"></ul>
-        </section>
-
-        <section id="sticky-notes">
-            <h2>Notes</h2>
-            <textarea placeholder="Write a note..."></textarea>
-        </section>
-
-        <section id="calendar-section">
-            <h2>Calendar</h2>
-            <input type="date">
-        </section>
+    <!-- Dashboard Section -->
+    <div id="dashboard" class="page" style="display: block;">
+        <h2>Dashboard</h2>
+        <input type="text" id="taskInput" placeholder="Add a task...">
+        <button onclick="addTask()">Add</button>
+        <ul id="taskList"></ul>
     </div>
 
-    <section id="journaling">
-        <h2>Journaling & Scripting</h2>
-        <textarea id="journal-input" placeholder="What are you manifesting today?"></textarea>
-    </section>
-</main>
+    <!-- Journaling Section -->
+    <div id="journaling" class="page">
+        <h2>Manifestation Journal</h2>
+        <textarea placeholder="What are you manifesting today?"></textarea>
+    </div>
+
+    <!-- Daily Planner Section -->
+    <div id="daily" class="page">
+        <h2>Daily Planner</h2>
+        <input type="date">
+        <p>Schedule: (Add your hourly tasks here)</p>
+    </div>
+
+    <script>
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
+            document.getElementById(pageId).style.display = 'block';
+        }
+        function addTask() {
+            let input = document.getElementById("taskInput");
+            if (input.value) {
+                let li = document.createElement("li");
+                li.textContent = input.value;
+                document.getElementById("taskList").appendChild(li);
+                input.value = "";
+            }
+        }
+    </script>
+        <!-- ... all your HTML sections above ... -->
+
+    <script>
+        // THIS IS THE JAVASCRIPT
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
+            document.getElementById(pageId).style.display = 'block';
+        }
+        function addTask() {
+            let input = document.getElementById("taskInput");
+            if (input.value) {
+                let li = document.createElement("li");
+                li.textContent = input.value;
+                document.getElementById("taskList").appendChild(li);
+                input.value = "";
+            }
+        }
+    </script>
+</body>
+</html>
+</body>
+</html>
     <script>
     function addTask() {
         let taskInput = document.getElementById("taskInput");
