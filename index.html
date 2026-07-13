@@ -51,28 +51,46 @@
     </nav>
 
     <main>
-        <section id="welcome-message">
-            <h1>Welcome, beautiful!</h1>
-            <p>Welcome to your new interactive planner. Welcome to your interactive Aura and Essence Celestial It Girl Planner.</p>
+<main>
+    <section id="welcome-message">
+        <h1>Welcome, beautiful!</h1>
+    </section>
+
+    <div id="dashboard-tools">
+        <section id="todo-list">
+            <h2>To-Do List</h2>
+            <input type="text" id="taskInput" placeholder="Add a task...">
+            <button onclick="addTask()">Add</button>
+            <ul id="taskList"></ul>
         </section>
 
-        <!-- New Dashboard Sections -->
-        <section id="dashboard-tools">
-            <div id="todo-list">
-                <h2>To-Do List</h2>
-                <!-- We will add task inputs here -->
-            </div>
-
-            <div id="sticky-notes">
-                <h2>Notes</h2>
-                <!-- Sticky note area -->
-            </div>
-
-            <div id="sticker-gallery">
-                <h2>Sticker Collection</h2>
-                <!-- Sticker grid area -->
-            </div>
+        <section id="sticky-notes">
+            <h2>Notes</h2>
+            <textarea placeholder="Write a note..."></textarea>
         </section>
-    </main>
+
+        <section id="calendar-section">
+            <h2>Calendar</h2>
+            <input type="date">
+        </section>
+    </div>
+
+    <section id="journaling">
+        <h2>Journaling & Scripting</h2>
+        <textarea id="journal-input" placeholder="What are you manifesting today?"></textarea>
+    </section>
+</main>
+    <script>
+    function addTask() {
+        let taskInput = document.getElementById("taskInput");
+        let taskList = document.getElementById("taskList");
+        if (taskInput.value !== "") {
+            let li = document.createElement("li");
+            li.textContent = taskInput.value;
+            taskList.appendChild(li);
+            taskInput.value = "";
+        }
+    }
+</script>
 </body>
 </html>
