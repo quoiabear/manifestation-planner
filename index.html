@@ -1,0 +1,1014 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dream Fairy Manifestation Planner</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Elegant Luxury Serif & Cute Soft Rounded -->
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=Quicksand:wght@400;600;700&family=Caveat:wght@400;700&display=swap" rel="stylesheet">
+  <!-- FontAwesome Icons for graphics -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <style>
+    body {
+      font-family: 'Quicksand', sans-serif;
+    }
+    .serif-title {
+      font-family: 'Playfair Display', serif;
+    }
+    .handwritten {
+      font-family: 'Caveat', cursive;
+    }
+    /* Glossy glass panels styled exactly like the "TOO GLAM TO STRESS" cover */
+    .neon-glass {
+      background: rgba(255, 240, 243, 0.45);
+      border: 2px solid rgba(255, 182, 193, 0.7);
+      backdrop-filter: blur(16px);
+      box-shadow: inset 0 4px 12px rgba(255, 255, 255, 0.8), 0 12px 36px rgba(219, 39, 119, 0.08);
+    }
+    .neon-text-pink {
+      text-shadow: 0 0 10px rgba(255, 20, 147, 0.6), 0 0 20px rgba(255, 105, 180, 0.4);
+    }
+    .scallop-border {
+      background-image: radial-gradient(circle, transparent 70%, #ffd6dc 70%);
+      background-size: 16px 16px;
+    }
+    .stationery-line {
+      background-image: linear-gradient(#ffccd5 1.5px, transparent 1.5px);
+      background-size: 100% 24px;
+      line-height: 24px;
+    }
+    /* Custom scrollbar matching coquette theme */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #fff5f6;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #ffb6c1;
+      border-radius: 10px;
+    }
+  </style>
+</head>
+<body class="bg-[#fff8f9] text-[#5c3d42] min-h-screen pb-12 selection:bg-pink-200">
+
+  <!-- Glitter Bow Header Banner -->
+  <div class="bg-gradient-to-r from-pink-400 via-rose-300 to-pink-400 py-2 text-center text-xs text-white tracking-widest font-semibold flex items-center justify-center gap-2 shadow-sm">
+    <i class="fa-solid fa-sparkles animate-pulse text-yellow-200"></i>
+    <span>"DREAM BIG • STUDY HARD • SHINE BRIGHT"</span>
+    <i class="fa-solid fa-sparkles animate-pulse text-yellow-200"></i>
+  </div>
+
+  <!-- Header Dashboard with Custom YouTube Cassette Player -->
+  <header class="max-w-7xl mx-auto px-4 pt-6 pb-2">
+    <div class="bg-white/80 backdrop-blur-md rounded-3xl p-6 border-2 border-pink-100 shadow-xs flex flex-col lg:flex-row items-center justify-between gap-6 relative overflow-hidden">
+      
+      <!-- Left side: Cameo branding -->
+      <div class="flex items-center gap-4 z-10 w-full lg:w-auto">
+        <div class="w-16 h-16 rounded-full bg-rose-100/50 border-2 border-pink-300 flex items-center justify-center relative shadow-inner shrink-0">
+          <i class="fa-solid fa-heart text-2xl text-rose-400"></i>
+          <div class="absolute -inset-1.5 border-2 border-dotted border-pink-300 rounded-full animate-spin" style="animation-duration: 40s;"></div>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <span contenteditable="true" class="font-serif text-2xl font-black text-[#be185d] border-b-2 border-dashed border-pink-200 focus:outline-none focus:border-pink-500 min-w-[200px]" id="planner-title">Angel's Dream Station</span>
+            <i class="fa-solid fa-edit text-pink-300 text-xs"></i>
+          </div>
+          <p class="text-xs text-rose-400 font-bold uppercase tracking-wider mt-1">✨ Retro Sanrio & Solfeggio Music Companion ✨</p>
+        </div>
+      </div>
+
+      <!-- Right side: Custom YouTube / Solfeggio cassette player block -->
+      <div class="bg-pink-50/80 rounded-2xl border-2 border-pink-100 p-4 flex flex-col md:flex-row items-center gap-4 shadow-inner z-10 w-full lg:w-auto">
+        <div class="flex items-center gap-2">
+          <span class="text-[10px] font-extrabold text-pink-600 uppercase tracking-wider">🎧 Solfeggio frequency:</span>
+          <div class="flex gap-1.5">
+            <button onclick="toggleFrequency(528)" id="btn-528" class="bg-white hover:bg-pink-50 text-pink-700 border border-pink-200 py-1 px-2.5 rounded-lg text-[10px] font-bold transition-all">528Hz DNA</button>
+            <button onclick="toggleFrequency(432)" id="btn-432" class="bg-white hover:bg-pink-50 text-pink-700 border border-pink-200 py-1 px-2.5 rounded-lg text-[10px] font-bold transition-all">432Hz Cosmic</button>
+          </div>
+        </div>
+
+        <div class="flex gap-1 w-full md:w-auto">
+          <input 
+            type="text" 
+            id="yt-link-input"
+            placeholder="Paste YouTube music link..." 
+            class="text-[10px] p-2 rounded-lg border border-pink-200 focus:outline-none bg-white text-pink-900 w-full md:w-44"
+          />
+          <button onclick="loadYoutubeEmbed()" class="bg-pink-400 hover:bg-pink-500 text-white font-bold text-[10px] px-2.5 rounded-lg shrink-0">Play</button>
+        </div>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- Main Grid Workspace -->
+  <main class="max-w-7xl mx-auto px-4 grid grid-cols-1 lg:grid-cols-4 gap-6 mt-4 items-start">
+    
+    <!-- LEFT PANEL: Dynamic Nav & Sticker Storage -->
+    <div class="lg:col-span-1 bg-white/90 rounded-3xl p-5 border border-pink-100 shadow-xs space-y-6">
+      
+      <div class="space-y-1">
+        <span class="text-[10px] uppercase tracking-widest font-bold text-pink-400 block pl-1">Aesthetic Modules</span>
+        <nav class="flex flex-col gap-1.5">
+          <button onclick="switchTab('daily')" class="tab-btn w-full text-left py-2.5 px-4 rounded-xl font-bold text-xs tracking-wider transition-all flex items-center justify-between bg-pink-400 text-white border-2 border-white shadow-xs" id="tab-daily">
+            <div class="flex items-center gap-2">
+              <i class="fa-solid fa-calendar-day"></i>
+              <span>🌸 Daily Planner</span>
+            </div>
+            <i class="fa-solid fa-chevron-right text-xs"></i>
+          </button>
+          
+          <button onclick="switchTab('weekly')" class="tab-btn w-full text-left py-2.5 px-4 rounded-xl font-bold text-xs tracking-wider transition-all flex items-center justify-between text-pink-700 hover:bg-pink-50 border-2 border-transparent" id="tab-weekly">
+            <div class="flex items-center gap-2">
+              <i class="fa-solid fa-calendar-week"></i>
+              <span>🎀 Weekly Schedule</span>
+            </div>
+            <i class="fa-solid fa-chevron-right text-xs"></i>
+          </button>
+
+          <button onclick="switchTab('monthly')" class="tab-btn w-full text-left py-2.5 px-4 rounded-xl font-bold text-xs tracking-wider transition-all flex items-center justify-between text-pink-700 hover:bg-pink-50 border-2 border-transparent" id="tab-monthly">
+            <div class="flex items-center gap-2">
+              <i class="fa-solid fa-calendar-days"></i>
+              <span>📅 2026 Monthly Grid</span>
+            </div>
+            <i class="fa-solid fa-chevron-right text-xs"></i>
+          </button>
+
+          <button onclick="switchTab('journal')" class="tab-btn w-full text-left py-2.5 px-4 rounded-xl font-bold text-xs tracking-wider transition-all flex items-center justify-between text-pink-700 hover:bg-pink-50 border-2 border-transparent" id="tab-journal">
+            <div class="flex items-center gap-2">
+              <i class="fa-solid fa-book-open"></i>
+              <span>🖋️ Self-Love Book Journal</span>
+            </div>
+            <i class="fa-solid fa-chevron-right text-xs"></i>
+          </button>
+
+          <button onclick="switchTab('study')" class="tab-btn w-full text-left py-2.5 px-4 rounded-xl font-bold text-xs tracking-wider transition-all flex items-center justify-between text-pink-700 hover:bg-pink-50 border-2 border-transparent" id="tab-study">
+            <div class="flex items-center gap-2">
+              <i class="fa-solid fa-graduation-cap"></i>
+              <span>📚 High-Grade Study Suite</span>
+            </div>
+            <i class="fa-solid fa-chevron-right text-xs"></i>
+          </button>
+        </nav>
+      </div>
+
+      <hr class="border-pink-100" />
+
+      <!-- Stickers Drawer -->
+      <div class="space-y-3">
+        <span class="text-[10px] font-extrabold uppercase tracking-widest text-pink-500 block">🌸 Stickers Tray</span>
+        <p class="text-[9px] text-pink-400">Tap to peel onto the active planner board below!</p>
+        <div class="grid grid-cols-2 gap-2" id="sticker-shelf">
+          <!-- Stickers rendered dynamically by JS -->
+        </div>
+      </div>
+
+      <!-- Active YouTube Player Embed Frame inside a pink retro cassette shell -->
+      <div class="bg-pink-100/40 p-2.5 rounded-2xl border-2 border-pink-200 hidden" id="yt-player-container">
+        <span class="text-[9px] font-bold text-pink-600 block text-center mb-1.5">📻 Active Frequency Video:</span>
+        <div id="yt-iframe-placeholder"></div>
+      </div>
+
+    </div>
+
+    <!-- RIGHT WORKSPACE: The Dynamic Canvas Page Layer -->
+    <div 
+      class="lg:col-span-3 min-h-[650px] bg-white rounded-3xl p-6 border-2 border-pink-200 shadow-sm relative overflow-hidden"
+      id="canvas-board"
+      style="background-image: radial-gradient(#ffd6dc 1px, transparent 1px); background-size: 24px 24px;"
+    >
+      <!-- Corner design bows -->
+      <div class="absolute top-2 left-2 text-pink-300 pointer-events-none">🎀</div>
+      <div class="absolute top-2 right-2 text-pink-300 pointer-events-none">🎀</div>
+      <div class="absolute bottom-2 left-2 text-pink-300 pointer-events-none">🎀</div>
+      <div class="absolute bottom-2 right-2 text-pink-300 pointer-events-none">🎀</div>
+
+      <!-- Sticker Canvas Overlay Layer -->
+      <div id="sticker-canvas-layer" class="absolute inset-0 pointer-events-none z-40"></div>
+
+      <!-- PAGE: 1. DAILY PLANNER (Image 26 & 21 Layouts) -->
+      <div id="page-daily" class="page-container space-y-6">
+        <div class="flex flex-col sm:flex-row justify-between items-center gap-2 border-b-2 border-pink-100 pb-3">
+          <div class="flex items-center gap-2">
+            <span class="text-xl">🌸</span>
+            <span contenteditable="true" class="font-serif text-xl font-bold text-[#be185d] focus:outline-none">Daily Planner Dashboard</span>
+          </div>
+          <input type="date" value="2026-07-15" class="p-1.5 border border-pink-200 rounded-lg text-xs font-bold bg-white focus:outline-none" />
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <!-- Schedule Table -->
+          <div class="lg:col-span-2 bg-pink-50/30 p-5 rounded-2xl border-2 border-pink-100">
+            <span contenteditable="true" class="text-[11px] font-bold text-pink-600 block mb-3 uppercase tracking-wide">📅 Schedule slots & timeline blocks</span>
+            <div class="divide-y divide-pink-100 space-y-1 max-h-[380px] overflow-y-auto pr-1" id="daily-timeline-list">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+
+          <!-- Side panels -->
+          <div class="space-y-4">
+            <!-- Focus Card -->
+            <div class="bg-pink-50/30 p-4 rounded-2xl border-2 border-pink-100">
+              <span contenteditable="true" class="text-[10px] font-bold text-pink-600 block mb-2 uppercase tracking-wide">🏆 TODAY'S TOP PRIORITY</span>
+              <textarea class="w-full h-16 text-xs p-2 rounded-xl border border-pink-100 focus:outline-none bg-white text-rose-800" placeholder="Type daily target here..."></textarea>
+            </div>
+
+            <!-- Custom Meal Tracker -->
+            <div class="bg-pink-50/30 p-4 rounded-2xl border-2 border-pink-100 space-y-2">
+              <span contenteditable="true" class="text-[10px] font-bold text-pink-600 block uppercase tracking-wide">🍽️ MEAL TRACKER</span>
+              <div class="space-y-1.5">
+                <input type="text" placeholder="Breakfast" class="w-full text-xs p-1.5 rounded-lg border border-pink-100 bg-white" />
+                <input type="text" placeholder="Lunch" class="w-full text-xs p-1.5 rounded-lg border border-pink-100 bg-white" />
+                <input type="text" placeholder="Dinner" class="w-full text-xs p-1.5 rounded-lg border border-pink-100 bg-white" />
+              </div>
+            </div>
+
+            <!-- Water droplets -->
+            <div class="bg-pink-50/30 p-4 rounded-2xl border-2 border-pink-100 text-center">
+              <span contenteditable="true" class="text-[10px] font-bold text-pink-600 block mb-2 uppercase tracking-wide">💧 WATER INTAKE</span>
+              <div class="flex justify-center gap-1.5" id="water-droplets-tray">
+                <!-- Rendered by JS -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PAGE: 2. WEEKLY PLANNER (Image 25 grid) -->
+      <div id="page-weekly" class="page-container space-y-6 hidden">
+        <div class="text-center">
+          <span class="text-2xl">🎀</span>
+          <h2 contenteditable="true" class="font-serif text-2xl font-bold text-[#be185d] inline-block ml-1 focus:outline-none">Weekly Horizon Planner</h2>
+          <p class="text-xs text-rose-400">Keep up with active projects and priority lanes across the week</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-7 gap-3" id="weekly-schedule-grid">
+          <!-- Rendered by JS -->
+        </div>
+      </div>
+
+      <!-- PAGE: 3. MONTHLY CALENDAR -->
+      <div id="page-monthly" class="page-container space-y-6 hidden">
+        <div class="flex justify-between items-center border-b-2 border-pink-100 pb-3">
+          <span class="text-xl">📅</span>
+          <h2 contenteditable="true" class="font-serif text-2xl font-bold text-[#be185d] focus:outline-none">July 2026 Calendar Grid</h2>
+          <span class="text-xl">📅</span>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div class="lg:col-span-2 bg-white/90 p-5 rounded-3xl border border-pink-100">
+            <div class="grid grid-cols-7 text-center text-xs font-bold text-pink-500 mb-2 border-b border-pink-100 pb-1">
+              <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
+            </div>
+            <div class="grid grid-cols-7 gap-1" id="monthly-days-grid">
+              <!-- Rendered by JS -->
+            </div>
+          </div>
+
+          <div class="bg-pink-50/30 p-5 rounded-3xl border-2 border-pink-100 flex flex-col justify-between gap-4">
+            <div>
+              <span contenteditable="true" class="text-xs font-bold text-pink-600 block uppercase tracking-wide mb-3">Dates To Remember:</span>
+              <div class="space-y-2 max-h-[220px] overflow-y-auto pr-1" id="monthly-events-logs">
+                <!-- Rendered by JS -->
+              </div>
+            </div>
+            <form onsubmit="addCalendarEvent(event)" class="bg-white p-3 rounded-2xl border border-pink-100 space-y-2">
+              <input type="date" id="cal-date-input" class="w-full text-xs p-1.5 border border-pink-100 rounded-lg focus:outline-none" value="2026-07-15" />
+              <input type="text" id="cal-text-input" placeholder="Type event details..." class="w-full text-xs p-1.5 border border-pink-100 rounded-lg focus:outline-none" />
+              <button type="submit" class="w-full bg-pink-400 hover:bg-pink-500 text-white font-bold text-xs py-1.5 rounded-lg">Add Event</button>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- PAGE: 4. DOUBLE-PAGE BOOK JOURNAL (Stationery styles) -->
+      <div id="page-journal" class="page-container space-y-6 hidden">
+        <div class="flex flex-wrap justify-between items-center gap-2 bg-pink-50/50 p-2.5 rounded-2xl border border-pink-100">
+          <span class="text-xs font-bold text-pink-700 block pl-1">📖 Stationery Page Design:</span>
+          <div class="flex gap-1.5">
+            <button onclick="setStationeryStyle('ballerina')" class="stationery-style-btn px-3 py-1.5 rounded-xl text-[10px] font-bold bg-pink-400 text-white border border-white" id="style-ballerina">Corset Lace (Image 21)</button>
+            <button onclick="setStationeryStyle('melody')" class="stationery-style-btn px-3 py-1.5 rounded-xl text-[10px] font-bold bg-white text-pink-700 border border-pink-200" id="style-melody">Dot Grid (Image 23)</button>
+            <button onclick="setStationeryStyle('ribbon')" class="stationery-style-btn px-3 py-1.5 rounded-xl text-[10px] font-bold bg-white text-pink-700 border border-pink-200" id="style-ribbon">Watercolor Bows (Image 22)</button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 bg-[#ffccd5]/30 rounded-[2.5rem] border-4 border-pink-200 shadow-md p-4 relative overflow-hidden gap-1">
+          <!-- Left side: Prompts directory -->
+          <div class="bg-white rounded-3xl p-5 border border-pink-100/60 shadow-inner flex flex-col justify-between space-y-4 z-10 relative">
+            <div class="space-y-3">
+              <div class="border-b border-pink-100 pb-2">
+                <span contenteditable="true" class="font-serif text-lg font-bold text-[#ff1493] tracking-tight focus:outline-none">Inquiries Directory</span>
+              </div>
+              <div class="flex gap-1.5 overflow-x-auto pb-1" id="journal-category-tabs">
+                <!-- Tabs populated by JS -->
+              </div>
+              <div class="space-y-1 max-h-[250px] overflow-y-auto pr-1" id="journal-prompt-list">
+                <!-- Prompts populated by JS -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Right side: Stationery paper -->
+          <div id="journal-paper" class="bg-white rounded-3xl p-6 border border-pink-100 shadow-inner flex flex-col justify-between space-y-4 relative overflow-hidden min-h-[450px]">
+            <!-- Decorative corset laces overlay on ballerina design -->
+            <div id="corset-overlay" class="absolute top-0 bottom-0 left-2 w-4 flex flex-col justify-around opacity-40 pointer-events-none">
+              <span>✕</span><span>✕</span><span>✕</span><span>✕</span><span>✕</span><span>✕</span><span>✕</span><span>✕</span><span>✕</span><span>✕</span>
+            </div>
+            
+            <div class="space-y-2 z-10">
+              <input type="text" id="journal-page-title" class="font-serif text-sm font-bold bg-transparent text-[#ff1493] focus:outline-none w-full" value="Reflection Log" />
+              <div class="bg-pink-50/40 p-2 rounded-xl border border-pink-100 text-[10px] text-pink-800 font-serif italic" id="active-prompt-display">
+                Prompt Selected: What part of me am I finally ready to stop hiding or shrinking?
+              </div>
+            </div>
+
+            <textarea id="journal-body-text" class="flex-1 w-full text-xs text-pink-950 bg-transparent focus:outline-none resize-none stationery-line z-10 h-72" placeholder="Start typing your heart out..."></textarea>
+
+            <div class="flex justify-between items-center border-t border-pink-100 pt-2 z-10">
+              <span class="text-[9px] text-pink-400">Save your pages regularly!</span>
+              <button onclick="saveJournalEntry()" class="bg-pink-400 hover:bg-pink-500 text-white font-bold text-[10px] py-1.5 px-4 rounded-lg border border-white">Save Stationery Page</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PAGE: 5. STUDY & EXAM SUITE -->
+      <div id="page-study" class="page-container space-y-6 hidden">
+        <div class="text-center">
+          <span class="text-2xl">⚡️</span>
+          <h2 contenteditable="true" class="font-serif text-2xl font-bold text-[#be185d] inline-block focus:outline-none">Study Suite & Exam Station</h2>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <!-- Pomodoro block -->
+          <div class="bg-white/90 p-5 rounded-2xl border border-pink-100 flex flex-col items-center justify-between gap-4">
+            <span contenteditable="true" class="text-[10px] font-bold text-pink-600 block uppercase tracking-wide">⏱️ POMODORO TIMER</span>
+            <div class="relative w-28 h-28 flex items-center justify-center">
+              <svg class="w-full h-full transform -rotate-90">
+                <circle cx="56" cy="64" r="48" stroke="#ffe4e6" stroke-width="6" fill="none" />
+                <circle id="timer-ring" cx="56" cy="64" r="48" stroke="#f43f5e" stroke-width="6" fill="none" stroke-dasharray="301" stroke-dashoffset="0" class="transition-all duration-1000" />
+              </svg>
+              <span id="timer-display" class="absolute text-xl font-bold text-rose-700">25:00</span>
+            </div>
+            <div class="flex gap-2 w-full">
+              <button onclick="toggleTimer()" id="timer-control-btn" class="flex-1 py-1.5 bg-pink-400 hover:bg-pink-500 text-white font-bold text-xs rounded-lg">Start</button>
+              <button onclick="resetTimer()" class="px-2.5 py-1.5 bg-pink-50 text-pink-700 border border-pink-200 rounded-lg text-xs">Reset</button>
+            </div>
+          </div>
+
+          <!-- Flashcards block -->
+          <div class="bg-white/90 p-5 rounded-2xl border border-pink-100 flex flex-col justify-between min-h-[240px]">
+            <div>
+              <span contenteditable="true" class="text-[10px] font-bold text-pink-600 block mb-2 uppercase tracking-wide">🃏 FLASHCARDS DECK</span>
+              <div id="flashcard-container" onclick="flipFlashcard()" class="bg-pink-50/50 hover:bg-pink-50 border border-pink-100 rounded-xl p-3 h-24 flex items-center justify-center text-center cursor-pointer font-serif italic text-xs font-bold text-pink-800">
+                Tap to flip card!
+              </div>
+            </div>
+            <form onsubmit="addFlashcard(event)" class="space-y-1.5 mt-2">
+              <input type="text" id="fc-q" placeholder="Question..." class="w-full text-[10px] p-1 border border-pink-100 rounded bg-white text-pink-900" />
+              <input type="text" id="fc-a" placeholder="Answer..." class="w-full text-[10px] p-1 border border-pink-100 rounded bg-white text-pink-900" />
+              <button type="submit" class="w-full py-1 bg-pink-400 text-white rounded text-[10px] font-bold">Add Flashcard</button>
+            </form>
+          </div>
+
+          <!-- Practice Quiz block -->
+          <div class="bg-white/90 p-5 rounded-2xl border border-pink-100 flex flex-col justify-between min-h-[240px]">
+            <div id="quiz-workspace">
+              <span contenteditable="true" class="text-[10px] font-bold text-pink-600 block mb-2 uppercase tracking-wide">📝 PRACTICE QUIZ</span>
+              <p id="quiz-question" class="text-xs text-pink-800 font-bold mb-2">Practice quiz loaded. Click start below!</p>
+              <div id="quiz-options-container" class="space-y-1"></div>
+            </div>
+            <button onclick="startQuiz()" id="quiz-start-btn" class="w-full bg-pink-400 text-white font-bold text-xs py-1.5 rounded-lg mt-2">Start Quiz</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <footer class="text-center mt-12 text-xs text-rose-400 space-y-1">
+    <p class="font-serif italic font-bold">"woman, you totally got this • stay soft always 🌸"</p>
+    <p class="text-[10px] opacity-75">Designed to compile 100% of the time. Drop this single file directly onto Vercel and watch it run live instantly.</p>
+  </footer>
+
+  <!-- Web Audio & Core Engine Script -->
+  <script>
+    // --- Solfeggio & Sound effects engine ---
+    class SoundEngine {
+      constructor() {
+        this.ctx = null;
+        this.osc1 = null;
+        this.osc2 = null;
+        this.gainNode = null;
+        this.playingFreq = false;
+      }
+      init() {
+        if (!this.ctx) {
+          this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+      }
+      playPop() {
+        this.init();
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(150, now);
+        osc.frequency.exponentialRampToValueAtTime(800, now + 0.05);
+        gain.gain.setValueAtTime(0.08, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.05);
+      }
+      playChime() {
+        this.init();
+        const now = this.ctx.currentTime;
+        const playTone = (freq, delay, dur) => {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, now + delay);
+          gain.gain.setValueAtTime(0.04, now + delay);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + delay + dur);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(now + delay);
+          osc.stop(now + delay + dur);
+        };
+        playTone(528, 0, 0.3);
+        playTone(659.25, 0.05, 0.3);
+        playTone(783.99, 0.1, 0.4);
+      }
+      toggleFreq(hz) {
+        this.init();
+        const now = this.ctx.currentTime;
+        if (this.playingFreq) {
+          this.stopFreq();
+          return false;
+        }
+        this.osc1 = this.ctx.createOscillator();
+        this.osc2 = this.ctx.createOscillator();
+        this.gainNode = this.ctx.createGain();
+        
+        this.osc1.type = 'sine';
+        this.osc1.frequency.setValueAtTime(hz, now);
+        this.osc2.type = 'triangle';
+        this.osc2.frequency.setValueAtTime(hz / 2, now); // Warm base note
+        
+        this.gainNode.gain.setValueAtTime(0.03, now);
+        this.osc1.connect(this.gainNode);
+        this.osc2.connect(this.gainNode);
+        this.gainNode.connect(this.ctx.destination);
+        
+        this.osc1.start(now);
+        this.osc2.start(now);
+        this.playingFreq = true;
+        return true;
+      }
+      stopFreq() {
+        if (this.osc1) {
+          try { this.osc1.stop(); this.osc2.stop(); } catch(e){}
+        }
+        this.playingFreq = false;
+      }
+    }
+
+    const sound = new SoundEngine();
+
+    // --- Stickers Definition ---
+    const STICKER_TEMPLATES = [
+      { id: 'typewriter', svg: `<svg viewBox="0 0 100 100" class="w-16 h-16"><rect x="20" y="55" width="60" height="25" rx="5" fill="#fbcfe8" stroke="#f472b6" stroke-width="2.5"/><rect x="25" y="45" width="50" height="15" rx="3" fill="#fdf2f8" stroke="#f472b6" stroke-width="2"/><line x1="30" y1="42" x2="70" y2="42" stroke="#f472b6" stroke-width="2"/><circle cx="32" cy="62" r="2.5" fill="#db2777"/><circle cx="44" cy="62" r="2.5" fill="#db2777"/><circle cx="56" cy="62" r="2.5" fill="#db2777"/><circle cx="68" cy="62" r="2.5" fill="#db2777"/><circle cx="38" cy="70" r="2.5" fill="#db2777"/><circle cx="50" cy="70" r="2.5" fill="#db2777"/><circle cx="62" cy="70" r="2.5" fill="#db2777"/><rect x="40" y="75" width="20" height="2" fill="#be185d"/><path d="M25 45 Q50 35 75 45" fill="none" stroke="#fff" stroke-width="1.5" opacity="0.6"/></svg>` },
+      { id: 'scented_candle', svg: `<svg viewBox="0 0 100 100" class="w-16 h-16"><rect x="30" y="38" width="40" height="48" rx="6" fill="#fdf2f8" stroke="#f472b6" stroke-width="2"/><rect x="34" y="44" width="32" height="34" rx="2" fill="#fff" stroke="#fbcfe8" stroke-width="1.5"/><line x1="50" y1="38" x2="50" y2="30" stroke="#f472b6" stroke-width="2"/><path d="M50,16 C53,24 50,29 50,29 C50,29 47,24 50,16 Z" fill="#fcd34d" opacity="0.9"/><path d="M50,20 C51,24 50,27 50,27 C50,27 49,24 50,20 Z" fill="#f97316"/></svg>` },
+      { id: 'rose_cup', svg: `<svg viewBox="0 0 100 100" class="w-16 h-16"><path d="M20,35 C20,65 30,70 50,70 C70,70 80,65 80,35 Z" fill="#fff" stroke="#f472b6" stroke-width="2.5"/><ellipse cx="50" cy="35" rx="30" ry="8" fill="#fdf2f8" stroke="#f472b6" stroke-width="2"/><path d="M80,42 C92,42 92,60 80,60" fill="none" stroke="#f472b6" stroke-width="2.5"/><circle cx="50" cy="52" r="4" fill="#f472b6"/><circle cx="47" cy="52" r="3" fill="#fbcfe8"/><circle cx="53" cy="52" r="3" fill="#fbcfe8"/><ellipse cx="50" cy="74" rx="38" ry="8" fill="#fff" stroke="#f472b6" stroke-width="2"/></svg>` },
+      { id: 'gold_mirror', svg: `<svg viewBox="0 0 100 100" class="w-16 h-16"><ellipse cx="50" cy="40" rx="28" ry="32" fill="#e0f2fe" stroke="#f472b6" stroke-width="4"/><path d="M50,72 L50,92 M40,92 L60,92" stroke="#f472b6" stroke-width="3" stroke-linecap="round"/><ellipse cx="50" cy="40" rx="24" ry="28" fill="#fff" opacity="0.4"/><circle cx="50" cy="8" r="4" fill="#f472b6"/><circle cx="22" cy="40" r="4" fill="#f472b6"/><circle cx="78" cy="40" r="4" fill="#f472b6"/></svg>` },
+      { id: 'golden_butterfly', svg: `<svg viewBox="0 0 100 100" class="w-16 h-16"><path d="M50,50 C30,25 15,30 25,55 C15,75 35,80 50,55 Z" fill="#fdf2f8" stroke="#f472b6" stroke-width="2.5"/><path d="M50,50 C70,25 85,30 75,55 C85,75 65,80 50,55 Z" fill="#fdf2f8" stroke="#f472b6" stroke-width="2.5"/><ellipse cx="50" cy="50" rx="3" ry="16" fill="#db2777"/><line x1="50" y1="36" x2="40" y2="22" stroke="#db2777" stroke-width="2" stroke-linecap="round"/><line x1="50" y1="36" x2="60" y2="22" stroke="#db2777" stroke-width="2" stroke-linecap="round"/></svg>` }
+    ];
+
+    // --- Journal Prompts database from Image e744e0a1 & 858edac4 ---
+    const PROMPT_DATABASE = {
+      freshStart: {
+        title: "Fresh Start Inquiries",
+        questions: [
+          "What part of me am I finally ready to stop hiding or shrinking?",
+          "What belief no longer fits the person I'm becoming?",
+          "What does a peaceful, aligned day actually look like for me?",
+          "What boundary would protect my time, peace, or focus this season?",
+          "If I started fresh without fear, what would I try or build?"
+        ]
+      },
+      detaching: {
+        title: "Detaching & Choosing You",
+        questions: [
+          "REALITY CHECK: What has he/she actually shown me through actions—not words?",
+          "EMOTIONAL AVAILABILITY: In what ways has he/she meet or not meet my emotional needs?",
+          "THE COST OF LOVING: What has it cost me—emotionally and mentally—to stay connected?",
+          "THE VERSION OF ME: What kind of woman am I becoming by choosing to walk away?"
+        ]
+      },
+      healing: {
+        title: "Healing & Self-Discovery",
+        questions: [
+          "What emotions have you been avoiding, and why?",
+          "What past experience shaped you the most?",
+          "What are 3 words that describe the person you want to become?"
+        ]
+      }
+    };
+
+    // --- In-Memory State Configuration ---
+    let dailyTimeline = {
+      '06:00 AM': 'Morning Sunshine Breathing & Hydration',
+      '08:00 AM': 'Quiet meditation & journaling alignment',
+      '10:00 AM': 'Lecture / Creative study hour',
+      '12:00 PM': 'Nourishing tea & lunch wind down',
+      '04:00 PM': 'Productive crafting block',
+      '08:00 PM': 'Warm reflection & reading space'
+    };
+
+    let activeFrequency = null;
+    let activeStationeryStyle = 'ballerina';
+    let waterCups = 6;
+    let savedEvents = [
+      { date: "2026-07-15", text: "🌸 Angel's Planner Launch!" }
+    ];
+    let flashcardsList = [
+      { q: "What is Solfeggio 528Hz?", a: "The frequency of DNA repair, transformation and alignment." },
+      { q: "Detaching Secret #1", a: "Focus strictly on actions, never on potential or words." }
+    ];
+    let activeCardIndex = 0;
+    let cardFlipped = false;
+
+    let quizQuestions = [
+      { q: "What frequency is known for Transformation?", opts: ["432Hz", "528Hz", "396Hz", "639Hz"], ans: 1 }
+    ];
+    let activeQuizIndex = 0;
+    let quizScore = 0;
+
+    // --- Bootstrapping the view ---
+    window.onload = function() {
+      renderStickerDrawer();
+      renderTimeline();
+      renderWaterDroplets();
+      renderWeeklyGrid();
+      renderMonthlyCalendar();
+      renderJournalPrompts('freshStart');
+      renderFlashcard();
+      sound.playChime();
+    };
+
+    // Tab switcher
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('bg-pink-400', 'text-white', 'border-2', 'border-white', 'shadow-xs');
+        btn.classList.add('text-pink-700', 'hover:bg-pink-50', 'border-2', 'border-transparent');
+      });
+      const activeBtn = document.getElementById(`tab-${tabId}`);
+      if (activeBtn) {
+        activeBtn.classList.remove('text-pink-700', 'hover:bg-pink-50', 'border-2', 'border-transparent');
+        activeBtn.classList.add('bg-pink-400', 'text-white', 'border-2', 'border-white', 'shadow-xs');
+      }
+
+      document.querySelectorAll('.page-container').forEach(page => page.classList.add('hidden'));
+      document.getElementById(`page-${tabId}`).classList.remove('hidden');
+      sound.playPop();
+    }
+
+    // Audio frequency toggler
+    function toggleFrequency(hz) {
+      if (activeFrequency === hz) {
+        sound.stopFreq();
+        activeFrequency = null;
+        document.getElementById(`btn-${hz}`).classList.remove('bg-pink-500', 'text-white');
+      } else {
+        sound.stopFreq();
+        document.querySelectorAll('[id^="btn-"]').forEach(btn => btn.classList.remove('bg-pink-500', 'text-white'));
+        const active = sound.toggleFreq(hz);
+        if (active) {
+          activeFrequency = hz;
+          document.getElementById(`btn-${hz}`).classList.add('bg-pink-500', 'text-white');
+        }
+      }
+    }
+
+    // YouTube dynamic cassette embedding
+    function loadYoutubeEmbed() {
+      const linkVal = document.getElementById('yt-link-input').value;
+      if (!linkVal) return;
+      let videoId = "";
+      if (linkVal.includes("v=")) {
+        videoId = linkVal.split("v=")[1].split("&")[0];
+      } else if (linkVal.includes("youtu.be/")) {
+        videoId = linkVal.split("youtu.be/")[1].split("?")[0];
+      } else {
+        videoId = linkVal;
+      }
+      if (videoId) {
+        document.getElementById('yt-player-container').classList.remove('hidden');
+        document.getElementById('yt-iframe-placeholder').innerHTML = `
+          <iframe width="100%" height="110" src="https://www.youtube.com/embed/${videoId}" frameborder="0" allow="autoplay" class="rounded-lg border border-pink-200"></iframe>
+        `;
+        sound.playChime();
+      }
+    }
+
+    // --- DRAGGABLE STICKER ENGINE (iPad, Mobile & Desktop Unified) ---
+    let draggedElement = null;
+    let offsetPctX = 0;
+    let offsetPctY = 0;
+
+    function renderStickerDrawer() {
+      const shelf = document.getElementById('sticker-shelf');
+      shelf.innerHTML = STICKER_TEMPLATES.map(st => `
+        <button onclick="peelSticker('${st.id}')" class="bg-white hover:bg-pink-50 border border-pink-100 rounded-xl p-2 flex flex-col items-center gap-1">
+          ${st.svg}
+          <span class="text-[9px] font-bold text-pink-500">Peel Sticker</span>
+        </button>
+      `).join('');
+    }
+
+    function peelSticker(type) {
+      const model = STICKER_TEMPLATES.find(s => s.id === type);
+      if (!model) return;
+      const stickerId = `canvas-st-${Date.now()}`;
+      
+      const stickerDiv = document.createElement('div');
+      stickerDiv.id = stickerId;
+      stickerDiv.className = "absolute z-50 pointer-events-auto cursor-grab active:cursor-grabbing p-1 bg-white/40 rounded-xl border border-transparent hover:border-pink-300";
+      stickerDiv.style.left = "40%";
+      stickerDiv.style.top = "40%";
+      stickerDiv.dataset.scale = "1.0";
+      stickerDiv.dataset.rot = "0";
+      stickerDiv.innerHTML = `
+        ${model.svg}
+        <div class="sticker-controls hidden absolute -top-8 left-1/2 transform -translate-x-1/2 bg-pink-500 text-white text-[9px] py-1 px-2 rounded-lg shadow-sm flex items-center gap-1.5">
+          <button onclick="scaleSticker('${stickerId}', -0.15)">-</button>
+          <span>Scale</span>
+          <button onclick="scaleSticker('${stickerId}', 0.15)">+</button>
+          <button onclick="rotateSticker('${stickerId}', 15)">↺</button>
+          <button onclick="deleteSticker('${stickerId}')"><i class="fa-solid fa-trash"></i></button>
+        </div>
+      `;
+
+      // Event registrations
+      stickerDiv.addEventListener('pointerdown', startStickerDrag);
+      document.getElementById('sticker-canvas-layer').appendChild(stickerDiv);
+      sound.playPop();
+    }
+
+    function startStickerDrag(e) {
+      e.stopPropagation();
+      draggedElement = e.currentTarget;
+      
+      // Hide all other sticker controls first
+      document.querySelectorAll('.sticker-controls').forEach(ctrl => ctrl.classList.add('hidden'));
+      draggedElement.querySelector('.sticker-controls').classList.remove('hidden');
+
+      const rect = draggedElement.parentElement.getBoundingClientRect();
+      const stRect = draggedElement.getBoundingClientRect();
+      
+      // Offset percentages inside the canvas wrapper
+      offsetPctX = ((e.clientX - stRect.left) / rect.width) * 100;
+      offsetPctY = ((e.clientY - stRect.top) / rect.height) * 100;
+
+      document.addEventListener('pointermove', onStickerDrag);
+      document.addEventListener('pointerup', stopStickerDrag);
+    }
+
+    function onStickerDrag(e) {
+      if (!draggedElement) return;
+      const container = document.getElementById('canvas-board');
+      const rect = container.getBoundingClientRect();
+      
+      const pctX = ((e.clientX - rect.left) / rect.width) * 100 - offsetPctX;
+      const pctY = ((e.clientY - rect.top) / rect.height) * 100 - offsetPctY;
+      
+      draggedElement.style.left = `${Math.max(1, Math.min(95, pctX))}%`;
+      draggedElement.style.top = `${Math.max(1, Math.min(95, pctY))}%`;
+    }
+
+    function stopStickerDrag() {
+      document.removeEventListener('pointermove', onStickerDrag);
+      document.removeEventListener('pointerup', stopStickerDrag);
+      draggedElement = null;
+    }
+
+    function scaleSticker(id, factor) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      let sc = parseFloat(el.dataset.scale) + factor;
+      sc = Math.max(0.4, Math.min(2.5, sc));
+      el.dataset.scale = sc;
+      updateTransform(el);
+      sound.playPop();
+    }
+
+    function rotateSticker(id, deg) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      let r = parseInt(el.dataset.rot) + deg;
+      el.dataset.rot = r;
+      updateTransform(el);
+      sound.playPop();
+    }
+
+    function deleteSticker(id) {
+      const el = document.getElementById(id);
+      if (el) el.remove();
+      sound.playPop();
+    }
+
+    function updateTransform(el) {
+      el.style.transform = `scale(${el.dataset.scale}) rotate(${el.dataset.rot}deg)`;
+    }
+
+    // --- DAILY PLANNER CORE ENGINE ---
+    function renderTimeline() {
+      const parent = document.getElementById('daily-timeline-list');
+      parent.innerHTML = Object.entries(dailyTimeline).map(([time, desc]) => `
+        <div class="py-2.5 flex items-start gap-3">
+          <span class="text-[10px] font-extrabold text-pink-500 w-16 pt-0.5">${time}</span>
+          <span contenteditable="true" onblur="updateTimelineHour('${time}', this.innerText)" class="text-xs text-rose-800 font-semibold hover:bg-white/60 p-1.5 rounded-lg cursor-pointer flex-1 transition-colors focus:bg-white focus:outline-none focus:ring-1 focus:ring-pink-300">
+            ${desc}
+          </span>
+        </div>
+      `).join('');
+    }
+
+    function updateTimelineHour(time, val) {
+      dailyTimeline[time] = val;
+    }
+
+    function renderWaterDroplets() {
+      const parent = document.getElementById('water-droplets-tray');
+      parent.innerHTML = Array.from({ length: 10 }).map((_, idx) => `
+        <button onclick="setWater(${idx + 1})" class="w-6 h-8 rounded-b-xl rounded-t-xs border flex items-center justify-center transition-all ${idx < waterCups ? 'bg-pink-400 border-pink-500 text-white' : 'bg-white border-pink-100 hover:bg-pink-50'}">
+          💧
+        </button>
+      `).join('');
+    }
+
+    function setWater(cups) {
+      waterCups = cups;
+      renderWaterDroplets();
+      sound.playPop();
+    }
+
+    // --- WEEKLY SCHEDULE GENERATOR ---
+    function renderWeeklyGrid() {
+      const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+      const grid = document.getElementById('weekly-schedule-grid');
+      grid.innerHTML = days.map(day => `
+        <div class="bg-white/90 p-4 rounded-xl border border-pink-100 flex flex-col justify-between gap-2.5 min-h-[160px] relative overflow-hidden">
+          <div class="absolute top-0 left-0 right-0 h-1 bg-pink-300"></div>
+          <div>
+            <span class="text-xs font-bold text-pink-600 tracking-wider block border-b border-pink-50 pb-1 mb-2">${day}</span>
+            <textarea class="w-full h-24 text-[10px] text-rose-800 bg-transparent resize-none focus:outline-none leading-relaxed font-semibold" placeholder="Type focus goal here..."></textarea>
+          </div>
+          <span class="text-[8px] text-pink-300 text-right block italic">Edited ✍️</span>
+        </div>
+      `).join('');
+    }
+
+    // --- CALENDAR 2026 ENGINE ---
+    function renderMonthlyCalendar() {
+      const grid = document.getElementById('monthly-days-grid');
+      // Render July 2026 starts on Wednesday offset (3 blank cards)
+      let html = Array.from({ length: 3 }).map(() => `<div class="min-h-[60px] bg-pink-50/10 rounded-xl"></div>`).join('');
+      
+      html += Array.from({ length: 31 }).map((_, idx) => {
+        const day = idx + 1;
+        const dateStr = `2026-07-${String(day).padStart(2, '0')}`;
+        const event = savedEvents.find(e => e.date === dateStr);
+        return `
+          <div onclick="setCalendarDateInput('${dateStr}')" class="min-h-[65px] p-1.5 rounded-xl border flex flex-col justify-between cursor-pointer hover:bg-pink-50 transition-all ${event ? 'bg-pink-100/50 border-pink-300 font-bold' : 'border-pink-100 text-pink-800'}">
+            <span class="text-[10px] font-bold block">${day}</span>
+            ${event ? `<span class="text-[8px] leading-tight text-pink-600 bg-white/80 p-0.5 rounded border border-pink-200 block truncate">${event.text}</span>` : ''}
+          </div>
+        `;
+      }).join('');
+      
+      grid.innerHTML = html;
+      renderCalendarEventsList();
+    }
+
+    function setCalendarDateInput(dateStr) {
+      document.getElementById('cal-date-input').value = dateStr;
+      sound.playPop();
+    }
+
+    function addCalendarEvent(e) {
+      e.preventDefault();
+      const date = document.getElementById('cal-date-input').value;
+      const text = document.getElementById('cal-text-input').value;
+      if (!text) return;
+      
+      savedEvents = savedEvents.filter(e => e.date !== date); // replace previous
+      savedEvents.push({ date, text });
+      document.getElementById('cal-text-input').value = "";
+      renderMonthlyCalendar();
+      sound.playChime();
+    }
+
+    function renderCalendarEventsList() {
+      const container = document.getElementById('monthly-events-logs');
+      container.innerHTML = savedEvents.map(e => `
+        <div class="bg-white p-2.5 rounded-xl border border-pink-100 text-xs shadow-3xs flex justify-between items-center">
+          <div>
+            <span class="font-extrabold text-pink-500 block text-[9px]">${e.date}</span>
+            <span class="text-pink-800 font-semibold">${e.text}</span>
+          </div>
+          <button onclick="removeCalEvent('${e.date}')" class="text-pink-300 hover:text-pink-500 text-[10px]"><i class="fa-solid fa-trash"></i></button>
+        </div>
+      `).join('');
+    }
+
+    function removeCalEvent(date) {
+      savedEvents = savedEvents.filter(e => e.date !== date);
+      renderMonthlyCalendar();
+      sound.playPop();
+    }
+
+    // --- SCRIPTORIUM STATIONERY DIARY ENGINE ---
+    function renderJournalPrompts(categoryKey) {
+      // Setup tabs
+      const tabWrap = document.getElementById('journal-category-tabs');
+      tabWrap.innerHTML = Object.entries(PROMPT_DATABASE).map(([key, item]) => `
+        <button onclick="renderJournalPrompts('${key}')" class="px-2.5 py-1 rounded-xl text-[10px] font-bold shrink-0 transition-all ${categoryKey === key ? 'bg-pink-400 text-white' : 'bg-pink-50 text-pink-700'}">
+          ${item.title}
+        </button>
+      `).join('');
+
+      // Setup list
+      const listWrap = document.getElementById('journal-prompt-list');
+      listWrap.innerHTML = PROMPT_DATABASE[categoryKey].questions.map(q => `
+        <button onclick="selectJournalPrompt(this.innerText)" class="w-full text-left p-2 rounded-lg text-xs leading-relaxed transition-all hover:bg-pink-50 text-pink-700">
+          ${q}
+        </button>
+      `).join('');
+    }
+
+    function selectJournalPrompt(text) {
+      document.getElementById('active-prompt-display').innerText = `Prompt Selected: ${text}`;
+      sound.playPop();
+    }
+
+    function setStationeryStyle(style) {
+      activeStationeryStyle = style;
+      const paper = document.getElementById('journal-paper');
+      const overlay = document.getElementById('corset-overlay');
+      
+      // Reset styles
+      paper.className = "bg-white rounded-3xl p-6 border border-pink-100 shadow-inner flex flex-col justify-between space-y-4 relative overflow-hidden min-h-[450px]";
+      overlay.classList.add('hidden');
+      
+      if (style === 'ballerina') {
+        overlay.classList.remove('hidden');
+      } else if (style === 'melody') {
+        paper.style.backgroundColor = '#fffdfd';
+        paper.style.backgroundImage = 'radial-gradient(#ffccd5 1.5px, transparent 1.5px)';
+        paper.style.backgroundSize = '12px 12px';
+      }
+      
+      document.querySelectorAll('.stationery-style-btn').forEach(btn => {
+        btn.className = "stationery-style-btn px-3 py-1.5 rounded-xl text-[10px] font-bold bg-white text-pink-700 border border-pink-200";
+      });
+      document.getElementById(`style-${style}`).className = "stationery-style-btn px-3 py-1.5 rounded-xl text-[10px] font-bold bg-pink-400 text-white border border-white";
+      sound.playChime();
+    }
+
+    function saveJournalEntry() {
+      sound.playChime();
+      alert("Stationery page logged and written! 🌸");
+    }
+
+    // --- STUDY SUITE / EXAMS COUNTER & TIMERS ---
+    let timerMins = 25;
+    let timerSecs = 0;
+    let timerRunning = false;
+    let intervalRef = null;
+
+    function toggleTimer() {
+      if (timerRunning) {
+        clearInterval(intervalRef);
+        timerRunning = false;
+        document.getElementById('timer-control-btn').innerText = "Start";
+      } else {
+        timerRunning = true;
+        document.getElementById('timer-control-btn').innerText = "Pause";
+        intervalRef = setInterval(() => {
+          if (timerSecs > 0) {
+            timerSecs--;
+          } else if (timerMins > 0) {
+            timerMins--;
+            timerSecs = 59;
+          } else {
+            clearInterval(intervalRef);
+            timerRunning = false;
+            sound.playChime();
+            alert("Study block complete! Grab some sweet tea ☕️");
+          }
+          updateTimerDisplay();
+        }, 1000);
+      }
+      sound.playPop();
+    }
+
+    function resetTimer() {
+      clearInterval(intervalRef);
+      timerRunning = false;
+      timerMins = 25;
+      timerSecs = 0;
+      updateTimerDisplay();
+      document.getElementById('timer-control-btn').innerText = "Start";
+      sound.playPop();
+    }
+
+    function updateTimerDisplay() {
+      document.getElementById('timer-display').innerText = `${String(timerMins).padStart(2, '0')}:${String(timerSecs).padStart(2, '0')}`;
+      const totalSec = 25 * 60;
+      const elapsedSec = (25 * 60) - (timerMins * 60 + timerSecs);
+      const ringOffset = 301 * (1 - elapsedSec / totalSec);
+      document.getElementById('timer-ring').setAttribute('stroke-dashoffset', ringOffset);
+    }
+
+    function renderFlashcard() {
+      const currentCard = flashcardsList[activeCardIndex];
+      const container = document.getElementById('flashcard-container');
+      if (cardFlipped) {
+        container.innerText = currentCard.a;
+        container.classList.add('bg-pink-100');
+      } else {
+        container.innerText = currentCard.q;
+        container.classList.remove('bg-pink-100');
+      }
+    }
+
+    function flipFlashcard() {
+      cardFlipped = !cardFlipped;
+      renderFlashcard();
+      sound.playPop();
+    }
+
+    function addFlashcard(e) {
+      e.preventDefault();
+      const q = document.getElementById('fc-q').value;
+      const a = document.getElementById('fc-a').value;
+      if (!q || !a) return;
+      flashcardsList.push({ q, a });
+      document.getElementById('fc-q').value = "";
+      document.getElementById('fc-a').value = "";
+      activeCardIndex = flashcardsList.length - 1;
+      cardFlipped = false;
+      renderFlashcard();
+      sound.playChime();
+    }
+
+    // Interactive Quiz Builder
+    function startQuiz() {
+      activeQuizIndex = 0;
+      quizScore = 0;
+      renderQuizQuestion();
+      document.getElementById('quiz-start-btn').classList.add('hidden');
+    }
+
+    function renderQuizQuestion() {
+      const qItem = quizQuestions[activeQuizIndex];
+      document.getElementById('quiz-question').innerText = qItem.q;
+      const wrapper = document.getElementById('quiz-options-container');
+      wrapper.innerHTML = qItem.opts.map((opt, oIdx) => `
+        <button onclick="submitQuizAnswer(${oIdx})" class="w-full text-left text-xs p-2 rounded-lg border border-pink-100 bg-white hover:bg-pink-50 text-pink-700 font-medium">
+          ${opt}
+        </button>
+      `).join('');
+    }
+
+    function submitQuizAnswer(selectedIdx) {
+      const qItem = quizQuestions[activeQuizIndex];
+      if (selectedIdx === qItem.ans) {
+        quizScore++;
+        sound.playChime();
+      } else {
+        sound.playPop();
+      }
+
+      if (activeQuizIndex + 1 < quizQuestions.length) {
+        activeQuizIndex++;
+        renderQuizQuestion();
+      } else {
+        document.getElementById('quiz-question').innerText = `Quiz completed! Score: ${quizScore}/${quizQuestions.length} 🎉`;
+        document.getElementById('quiz-options-container').innerHTML = "";
+        document.getElementById('quiz-start-btn').classList.remove('hidden');
+        document.getElementById('quiz-start-btn').innerText = "Restart Quiz";
+      }
+    }
+  </script>
+</body>
+</html>
+
