@@ -1,56 +1,1768 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Celestial It Girl Planner</title>
-    <style>
-        body { background-color: #fff0f5; font-family: 'Verdana', sans-serif; color: #d63384; padding: 20px; }
-        .header-decor { display: flex; justify-content: space-between; align-items: center; padding-bottom: 20px; }
-        .container { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; max-width: 900px; margin: auto; }
-        .box { background: white; padding: 20px; border-radius: 25px; border: 2px solid #ffc0cb; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
-        h2 { color: #ff69b4; margin-top: 0; }
-        input, textarea { width: 90%; padding: 10px; border: 1px solid #ffc0cb; border-radius: 10px; margin-bottom: 10px; }
-        button { background: #ffb7c5; border: none; padding: 8px 15px; border-radius: 10px; color: white; cursor: pointer; }
-    </style>
-</head>
-<body>
+import React, { useState, useEffect, useRef } from 'react';
+import { 
+  Heart, Sparkles, BookOpen, Calendar, CheckSquare, Clock, Feather, 
+  Smile, Plus, Trash2, Edit2, RotateCcw, Share2, Volume2, VolumeX,
+  Play, Pause, Trash, Save, Download, Upload, Check, ChevronLeft, ChevronRight, HelpCircle
+} from 'lucide-react';
 
-    <div class="header-decor">
-        <h1 style="margin: auto;">Manifestation Planner</h1>
-    </div>
+// --- FIREBASE CONFIGURATION & INITIALIZATION ---
+// Safe mock/runtime setups for embedding
+const appId = typeof __app_id !== 'undefined' ? __app_id : 'coquette-planner-1';
 
-    <div class="container">
-        <div class="box">
-            <h2>Daily Schedule</h2>
-            <textarea placeholder="6 AM..."></textarea>
-        </div>
-        <div class="box">
-            <h2>To-Do List</h2>
-            <input type="text" id="taskInput" placeholder="Add a task...">
-            <button onclick="addTask()">Add</button>
-            <ul id="taskList"></ul>
-        </div>
-        <div class="box">
-            <h2>Journaling & Scripting</h2>
-            <textarea placeholder="What are you manifesting today?"></textarea>
-        </div>
-        <div class="box">
-            <h2>Notes</h2>
-            <textarea placeholder="Write a note..."></textarea>
-        </div>
-    </div>
+// Web Audio API Sound Synthesizer (Zero external dependency chime & alerts)
+class SoundSynth {
+  constructor() {
+    this.ctx = null;
+    this.muted = false;
+  }
+  init() {
+    if (!this.ctx) {
+      this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+  }
+  playChime() {
+    if (this.muted) return;
+    this.init();
+    const now = this.ctx.currentTime;
+    const playTone = (freq, delay, dur) => {
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(freq, now + delay);
+      gain.gain.setValueAtTime(0.08, now + delay);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + delay + dur);
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      osc.start(now + delay);
+      osc.stop(now + delay + dur);
+    };
+    // Sweet ascending cute chime
+    playTone(523.25, 0, 0.1);    // C5
+    playTone(659.25, 0.05, 0.1);  // E5
+    playTone(783.99, 0.1, 0.12);  // G5
+    playTone(1046.50, 0.15, 0.2); // C6
+  }
+  playPop() {
+    if (this.muted) return;
+    this.init();
+    const now = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(150, now);
+    osc.frequency.exponentialRampToValueAtTime(600, now + 0.08);
+    gain.gain.setValueAtTime(0.12, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+    osc.connect(gain);
+    gain.connect(this.ctx.destination);
+    osc.start(now);
+    osc.stop(now + 0.08);
+  }
+  playBell() {
+    if (this.muted) return;
+    this.init();
+    const now = this.ctx.currentTime;
+    const playDing = (freq, delay) => {
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, now + delay);
+      gain.gain.setValueAtTime(0.15, now + delay);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + delay + 0.6);
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      osc.start(now + delay);
+      osc.stop(now + delay + 0.6);
+    };
+    playDing(880, 0);
+    playDing(880, 0.15);
+  }
+}
 
-    <script>
-        function addTask() {
-            let input = document.getElementById("taskInput");
-            if (input.value) {
-                let li = document.createElement("li");
-                li.textContent = input.value;
-                document.getElementById("taskList").appendChild(li);
-                input.value = "";
-            }
+const synth = new SoundSynth();
+
+// Pre-defined customized decorative stickers
+const STICKERS_ASSETS = [
+  {
+    id: 'bow_pink',
+    name: 'Coquette Bow',
+    svg: (
+      <svg viewBox="0 0 100 100" className="w-12 h-12">
+        <path d="M50 50 C30 20, 10 30, 25 50 C10 70, 30 80, 50 50 Z" fill="#f43f5e" opacity="0.8" />
+        <path d="M50 50 C70 20, 90 30, 75 50 C90 70, 70 80, 50 50 Z" fill="#f43f5e" opacity="0.8" />
+        <circle cx="50" cy="50" r="7" fill="#f43f5e" />
+        <path d="M50 50 Q40 85, 30 90" stroke="#f43f5e" strokeWidth="6" strokeLinecap="round" fill="none" />
+        <path d="M50 50 Q60 85, 70 90" stroke="#f43f5e" strokeWidth="6" strokeLinecap="round" fill="none" />
+      </svg>
+    )
+  },
+  {
+    id: 'cherry',
+    name: 'Cherry pair',
+    svg: (
+      <svg viewBox="0 0 100 100" className="w-12 h-12">
+        <circle cx="35" cy="70" r="18" fill="#e11d48" />
+        <circle cx="68" cy="65" r="18" fill="#be123c" />
+        <circle cx="31" cy="64" r="5" fill="#ffffff" opacity="0.6" />
+        <circle cx="64" cy="59" r="5" fill="#ffffff" opacity="0.6" />
+        <path d="M35 52 Q50 30, 55 15" stroke="#16a34a" strokeWidth="4" fill="none" />
+        <path d="M68 47 Q60 25, 55 15" stroke="#16a34a" strokeWidth="4" fill="none" />
+        <path d="M55 15 C45 10, 40 25, 55 15 Z" fill="#15803d" />
+      </svg>
+    )
+  },
+  {
+    id: 'sparkle_gold',
+    name: 'Magical Sparkle',
+    svg: (
+      <svg viewBox="0 0 100 100" className="w-12 h-12">
+        <path d="M50 10 Q50 50, 90 50 Q50 50, 50 90 Q50 50, 10 50 Q50 50, 50 10 Z" fill="#fbbf24" />
+        <circle cx="50" cy="50" r="5" fill="#ffffff" />
+      </svg>
+    )
+  },
+  {
+    id: 'heart_locket',
+    name: 'Locket of Dreams',
+    svg: (
+      <svg viewBox="0 0 100 100" className="w-12 h-12">
+        <path d="M50 85 C10 55, 15 20, 50 40 C85 20, 90 55, 50 85 Z" fill="#fda4af" stroke="#f43f5e" strokeWidth="3" />
+        <path d="M50 50 L50 65 M47 55 L53 55" stroke="#be123c" strokeWidth="3" strokeLinecap="round" />
+        <circle cx="50" cy="50" r="4" fill="#be123c" />
+        <circle cx="50" cy="25" r="8" stroke="#f43f5e" strokeWidth="3" fill="none" />
+      </svg>
+    )
+  },
+  {
+    id: 'cute_bear',
+    name: 'Dreamy Bear',
+    svg: (
+      <svg viewBox="0 0 100 100" className="w-12 h-12">
+        <circle cx="30" cy="30" r="14" fill="#ebd4cb" />
+        <circle cx="70" cy="30" r="14" fill="#ebd4cb" />
+        <circle cx="30" cy="30" r="7" fill="#fda4af" />
+        <circle cx="70" cy="30" r="7" fill="#fda4af" />
+        <circle cx="50" cy="55" r="30" fill="#ebd4cb" />
+        <circle cx="50" cy="62" r="12" fill="#ffffff" />
+        <ellipse cx="50" cy="58" rx="4" ry="3" fill="#be123c" />
+        <circle cx="38" cy="48" r="4" fill="#4c0519" />
+        <circle cx="62" cy="48" r="4" fill="#4c0519" />
+        <path d="M43 65 Q50 72, 57 65" stroke="#be123c" strokeWidth="2.5" fill="none" />
+      </svg>
+    )
+  },
+  {
+    id: 'princess_crown',
+    name: 'Sweet Crown',
+    svg: (
+      <svg viewBox="0 0 100 100" className="w-12 h-12">
+        <path d="M15 75 L25 35 L40 55 L50 25 L60 55 L75 35 L85 75 Z" fill="#fee2e2" stroke="#f43f5e" strokeWidth="3" />
+        <rect x="20" y="70" width="60" height="8" rx="3" fill="#fda4af" />
+        <circle cx="25" cy="32" r="5" fill="#f43f5e" />
+        <circle cx="50" cy="21" r="6" fill="#fbbf24" />
+        <circle cx="75" cy="32" r="5" fill="#f43f5e" />
+        <circle cx="50" cy="50" r="4" fill="#3b82f6" />
+      </svg>
+    )
+  }
+];
+
+// Aesthetic themes definition
+const THEMES = {
+  fairyPink: {
+    primary: 'bg-rose-100 text-rose-800 border-rose-200',
+    accent: 'bg-rose-400 text-white hover:bg-rose-500',
+    light: 'bg-rose-50/50',
+    card: 'bg-white/80 border-rose-100',
+    accentColor: '#f43f5e',
+    gridColor: 'rgba(244, 63, 94, 0.05)',
+  },
+  lavenderClouds: {
+    primary: 'bg-purple-100 text-purple-800 border-purple-200',
+    accent: 'bg-purple-400 text-white hover:bg-purple-500',
+    light: 'bg-purple-50/50',
+    card: 'bg-white/80 border-purple-100',
+    accentColor: '#a855f7',
+    gridColor: 'rgba(168, 85, 247, 0.05)',
+  },
+  roseGold: {
+    primary: 'bg-amber-100 text-amber-900 border-amber-200',
+    accent: 'bg-amber-600/70 text-white hover:bg-amber-600',
+    light: 'bg-amber-50/40',
+    card: 'bg-white/85 border-amber-100',
+    accentColor: '#d97706',
+    gridColor: 'rgba(217, 119, 6, 0.04)',
+  }
+};
+
+export default function App() {
+  // Config & State
+  const [theme, setTheme] = useState('fairyPink');
+  const [plannerName, setPlannerName] = useState("Sophia's Dream Planner");
+  const [currentTab, setCurrentTab] = useState('planner'); // planner | study | journaling | stickers | config
+  const [plannerSubTab, setPlannerSubTab] = useState('daily'); // daily | weekly | monthly
+  const [isMuted, setIsMuted] = useState(false);
+  const [manifestationText, setManifestationText] = useState("I am aligned, peaceful, and fully capable of creating my most gorgeous reality today.");
+
+  // To-Do State
+  const [todos, setTodos] = useState([
+    { id: 1, text: 'Study for Chemistry Midterm', done: false, time: '10:00 AM' },
+    { id: 2, text: 'Plan Etsy printable layouts', done: true, time: '2:00 PM' },
+    { id: 3, text: 'Evening gratitude journaling', done: false, time: '9:30 PM' }
+  ]);
+  const [newTodoText, setNewTodoText] = useState('');
+  const [newTodoTime, setNewTodoTime] = useState('09:00 AM');
+
+  // Daily Schedule state
+  const [dailyTimeline, setDailyTimeline] = useState({
+    '06:00 AM': 'Morning Hydration & Sunshine Meditation 🌸',
+    '08:00 AM': 'Quiet study block & tea',
+    '10:00 AM': 'Lecture / Study group check-in',
+    '12:00 PM': 'Nourishing lunch & active stretching',
+    '02:00 PM': 'Create content & listing assets',
+    '04:00 PM': 'Etsy store operations & design time ✨',
+    '06:00 PM': 'Dinner, walks & wind down',
+    '08:00 PM': 'Self-reflection prompt time',
+    '10:00 PM': 'Gratitude log & soft reading'
+  });
+  const [editingHour, setEditingHour] = useState(null);
+  const [editHourValue, setEditHourValue] = useState('');
+
+  // Weekly Planner Note blocks
+  const [weeklyNotes, setWeeklyNotes] = useState({
+    Monday: 'Focus on finishing aesthetic mockups',
+    Tuesday: 'Upload 3 new listings to the online store',
+    Wednesday: 'Quiz preparation & deck updates',
+    Thursday: 'Deep study night & Pomodoro sets',
+    Friday: 'Release weekend custom stickers',
+    Saturday: 'Self-care bath & digital detox rituals',
+    Sunday: 'Clean workspace & reset calendar'
+  });
+
+  // Monthly 2026 Interactive Calendar state
+  const [selectedMonth, setSelectedMonth] = useState(4); // May (0-indexed base, so 4 is May)
+  const [monthlyEvents, setMonthlyEvents] = useState({
+    '2026-05-10': '🎁 Mother\'s Day',
+    '2026-05-16': '📝 Chemistry Finals Prep',
+    '2026-05-25': '🎀 Etsy Shop Update Drop',
+    '2026-05-28': '⭐️ Manifestation ritual night'
+  });
+  const [newEventDate, setNewEventDate] = useState('2026-05-16');
+  const [newEventText, setNewEventText] = useState('');
+
+  // School work checker state
+  const [assignments, setAssignments] = useState([
+    { id: 1, title: 'Calculus Problem Set 4', subject: 'Math', dueDate: '2026-05-12', status: 'In Progress', grade: '' },
+    { id: 2, title: 'Aesthetic Marketing Essay', subject: 'Business', dueDate: '2026-05-18', status: 'Not Started', grade: '' },
+    { id: 3, title: 'Organic Chemistry Lab Sheet', subject: 'Chemistry', dueDate: '2026-05-08', status: 'Graded', grade: 'A+' }
+  ]);
+  const [newAssignment, setNewAssignment] = useState({ title: '', subject: 'Math', dueDate: '2026-05-15', status: 'Not Started' });
+
+  // Quiz maker state
+  const [quizQuestions, setQuizQuestions] = useState([
+    { id: 1, question: 'What is the dynamic chemical balance of soft aesthetic composition?', options: ['Symmetry', 'Asymmetry', 'Visual weight balance', 'All of the above'], answer: 3 },
+    { id: 2, question: 'Which mindset emphasizes aligning behavior with the reality of actions over wishful thinking?', options: ['Emotional availability check', 'Reality check detachment', 'Passive manifestation', 'Shadow work avoidance'], answer: 1 }
+  ]);
+  const [newQuizQ, setNewQuizQ] = useState({ question: '', opt1: '', opt2: '', opt3: '', opt4: '', correct: 0 });
+  const [quizActive, setQuizActive] = useState(false);
+  const [currentQuizIndex, setCurrentQuizIndex] = useState(0);
+  const [quizScore, setQuizScore] = useState(0);
+  const [selectedQuizAns, setSelectedQuizAns] = useState(null);
+  const [quizFinished, setQuizFinished] = useState(false);
+
+  // Flashcards state
+  const [flashDecks, setFlashDecks] = useState([
+    { id: 1, front: 'Manifestation definition', back: 'Aligning intentions with matching focus and feelings to create physical reality.', category: 'Manifestation' },
+    { id: 2, front: 'Reality Check Detachment', back: 'Focussing on actual actions, not dreams or soft promises.', category: 'Healing' },
+    { id: 3, front: 'Pomodoro optimal breakdown', back: '25 minutes focused deep study, 5 minutes blissful tea stretching.', category: 'Study' }
+  ]);
+  const [newFlashcard, setNewFlashcard] = useState({ front: '', back: '', category: 'Study' });
+  const [activeDeckFilter, setActiveDeckFilter] = useState('All');
+  const [flippedCardId, setFlippedCardId] = useState(null);
+
+  // Timer State
+  const [timerMinutes, setTimerMinutes] = useState(25);
+  const [timerSeconds, setTimerSeconds] = useState(0);
+  const [timerRunning, setTimerRunning] = useState(false);
+  const [timerTotalSet, setTimerTotalSet] = useState(25); // for visual progress ring
+  const timerIntervalRef = useRef(null);
+
+  // Journal Station State
+  const [selectedPromptCategory, setSelectedPromptCategory] = useState('Healing');
+  const [selectedPrompt, setSelectedPrompt] = useState('What emotions have you been avoiding, and why?');
+  const [journalContent, setJournalContent] = useState('');
+  const [savedJournalEntries, setSavedJournalEntries] = useState([
+    { id: 1, date: 'May 4, 2026', category: 'Healing', prompt: 'What habits drain your energy?', content: 'Letting scroll-loops dictate my mornings is a major drainer. Need more visual and intentional tracking to ground myself in positive focus.', mood: 'Peaceful' }
+  ]);
+  const [activeMood, setActiveMood] = useState('🌸 Soft');
+
+  // Interactive Custom Stickers Layer State
+  const [activeStickers, setActiveStickers] = useState([
+    { id: 'initial-1', type: 'bow_pink', x: 75, y: 15, scale: 1.2, rot: -10 },
+    { id: 'initial-2', type: 'sparkle_gold', x: 22, y: 18, scale: 1.0, rot: 15 }
+  ]);
+  const [selectedStickerId, setSelectedStickerId] = useState(null);
+  const [isDraggingSticker, setIsDraggingSticker] = useState(false);
+  const dragOffsetRef = useRef({ x: 0, y: 0 });
+
+  // Load / Save features for Etsy selling demo
+  const handleExportData = () => {
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({
+      theme, plannerName, todos, dailyTimeline, weeklyNotes, monthlyEvents, assignments, quizQuestions, flashDecks, savedJournalEntries
+    }, null, 2));
+    const downloadAnchor = document.createElement('a');
+    downloadAnchor.setAttribute("href", dataStr);
+    downloadAnchor.setAttribute("download", `${plannerName.toLowerCase().replace(/\s+/g, '-')}-config.json`);
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    downloadAnchor.remove();
+    synth.playBell();
+  };
+
+  const handleImportData = (e) => {
+    const fileReader = new FileReader();
+    fileReader.onload = (event) => {
+      try {
+        const parsed = JSON.parse(event.target.result);
+        if (parsed.theme) setTheme(parsed.theme);
+        if (parsed.plannerName) setPlannerName(parsed.plannerName);
+        if (parsed.todos) setTodos(parsed.todos);
+        if (parsed.dailyTimeline) setDailyTimeline(parsed.dailyTimeline);
+        if (parsed.weeklyNotes) setWeeklyNotes(parsed.weeklyNotes);
+        if (parsed.monthlyEvents) setMonthlyEvents(parsed.monthlyEvents);
+        if (parsed.assignments) setAssignments(parsed.assignments);
+        if (parsed.quizQuestions) setQuizQuestions(parsed.quizQuestions);
+        if (parsed.flashDecks) setFlashDecks(parsed.flashDecks);
+        if (parsed.savedJournalEntries) setSavedJournalEntries(parsed.savedJournalEntries);
+        synth.playChime();
+      } catch (err) {
+        alert("Oh no! This file layout style is not recognized. Please make sure it's a valid template file.");
+      }
+    };
+    if (e.target.files[0]) {
+      fileReader.readAsText(e.target.files[0]);
+    }
+  };
+
+  // Sound toggling
+  const toggleMute = () => {
+    const nextMute = !isMuted;
+    setIsMuted(nextMute);
+    synth.muted = nextMute;
+    if (!nextMute) {
+      synth.playChime();
+    }
+  };
+
+  // Timer runner logic
+  useEffect(() => {
+    if (timerRunning) {
+      timerIntervalRef.current = setInterval(() => {
+        if (timerSeconds > 0) {
+          setTimerSeconds(timerSeconds - 1);
+        } else if (timerMinutes > 0) {
+          setTimerMinutes(timerMinutes - 1);
+          setTimerSeconds(59);
+        } else {
+          // Timer finished
+          setTimerRunning(false);
+          synth.playBell();
+          clearInterval(timerIntervalRef.current);
         }
-    </script>
-</body>
-</html>
+      }, 1000);
+    } else {
+      clearInterval(timerIntervalRef.current);
+    }
+    return () => clearInterval(timerIntervalRef.current);
+  }, [timerRunning, timerMinutes, timerSeconds]);
+
+  // Handle To-Do actions
+  const handleAddTodo = (e) => {
+    e.preventDefault();
+    if (!newTodoText.trim()) return;
+    const newTodo = {
+      id: Date.now(),
+      text: newTodoText,
+      done: false,
+      time: newTodoTime
+    };
+    setTodos([...todos, newTodo]);
+    setNewTodoText('');
+    synth.playPop();
+  };
+
+  const toggleTodo = (id) => {
+    setTodos(todos.map(todo => {
+      if (todo.id === id) {
+        if (!todo.done) {
+          synth.playChime();
+        } else {
+          synth.playPop();
+        }
+        return { ...todo, done: !todo.done };
+      }
+      return todo;
+    }));
+  };
+
+  const deleteTodo = (id) => {
+    setTodos(todos.filter(todo => todo.id !== id));
+    synth.playPop();
+  };
+
+  // Prompt listings extracted from pictures
+  const PROMPTS_DATABASE = {
+    Healing: [
+      "What emotions have you been avoiding, and why?",
+      "What past hurt do you need to forgive yourself for?",
+      "What habits drain your energy and well-being?",
+      "How do you process difficult emotions?",
+      "What's one thing you need to hear right now?",
+      "How can you show yourself more kindness?",
+      "What does emotional healing mean to you?"
+    ],
+    Growth: [
+      "What are three habits you want to build this year?",
+      "How do you define success in your own words?",
+      "What's your biggest dream, and what's stopping you from achieving it?",
+      "How do you handle failure, and how can you improve?",
+      "What's something new you want to learn this month and why?",
+      "How do you stay motivated when things get tough?"
+    ],
+    SelfDiscovery: [
+      "What makes you unique?",
+      "What activities make you lose track of time?",
+      "What fears hold you back from your dreams?",
+      "How would your ideal daily routine look?",
+      "When do you feel most confident?",
+      "What past experience shaped you the most?",
+      "What advice would your future self give you today?",
+      "What limiting beliefs do you need to let go of?",
+      "What are 3 words that describe the person you want to become?"
+    ],
+    Detaching: [
+      "Reality Check: What has he/she actually shown through actions—not words?",
+      "Emotional Availability Audit: In what ways has there been an inability to meet my needs?",
+      "The Cost of Loving: What has it cost me emotionally, mentally, physically?",
+      "What I Deserve: What does a healthy, emotionally safe relationship look like?",
+      "If I Continue This Path: How will I feel 3 months from now if things stay the same?",
+      "The Version of Me I'm Becoming: What kind of person am I becoming by choosing to walk away?",
+      "Unsent Truth: What do I wish I could say with absolutely no filters?",
+      "Redirecting Love Back: How can I redirect all the external validation back to myself?",
+      "The Illusion vs The Pattern: What moments made me feel special vs what patterns made me feel small?",
+      "Closure Without Them: What closure can I actively give myself?"
+    ],
+    Gratitude: [
+      "Morning: Before the world gets loud, what 3 beautiful things do I appreciate?",
+      "Night: What brought me peace today, and how did I act better than the old me would have?",
+      "Growth Check: What is one small progress step I am celebrating today?"
+    ]
+  };
+
+  // Update prompt list when category changes
+  const handleCategoryChange = (cat) => {
+    setSelectedPromptCategory(cat);
+    setSelectedPrompt(PROMPTS_DATABASE[cat][0]);
+  };
+
+  // Sticker drag handling logic
+  const handleStickerMouseDown = (e, stickerId, startX, startY) => {
+    e.stopPropagation();
+    setSelectedStickerId(stickerId);
+    setIsDraggingSticker(true);
+    const sticker = activeStickers.find(s => s.id === stickerId);
+    if (sticker) {
+      // Calculate offset inside the drag container coordinates
+      dragOffsetRef.current = {
+        x: startX - sticker.x,
+        y: startY - sticker.y
+      };
+    }
+  };
+
+  const handleContainerMouseMove = (e) => {
+    if (!isDraggingSticker || !selectedStickerId) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const xPercent = ((e.clientX - rect.left) / rect.width) * 100;
+    const yPercent = ((e.clientY - rect.top) / rect.height) * 100;
+
+    setActiveStickers(activeStickers.map(st => {
+      if (st.id === selectedStickerId) {
+        // Enforce boundary logic nicely
+        return {
+          ...st,
+          x: Math.max(0, Math.min(95, xPercent - dragOffsetRef.current.x)),
+          y: Math.max(0, Math.min(95, yPercent - dragOffsetRef.current.y))
+        };
+      }
+      return st;
+    }));
+  };
+
+  const handleContainerTouchMove = (e) => {
+    if (!isDraggingSticker || !selectedStickerId) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const touch = e.touches[0];
+    const xPercent = ((touch.clientX - rect.left) / rect.width) * 100;
+    const yPercent = ((touch.clientY - rect.top) / rect.height) * 100;
+
+    setActiveStickers(activeStickers.map(st => {
+      if (st.id === selectedStickerId) {
+        return {
+          ...st,
+          x: Math.max(0, Math.min(95, xPercent - dragOffsetRef.current.x)),
+          y: Math.max(0, Math.min(95, yPercent - dragOffsetRef.current.y))
+        };
+      }
+      return st;
+    }));
+  };
+
+  const handleStickerDrop = () => {
+    setIsDraggingSticker(false);
+  };
+
+  const placeSticker = (type) => {
+    const newSt = {
+      id: `sticker-${Date.now()}`,
+      type: type,
+      x: 40 + Math.random() * 15,
+      y: 35 + Math.random() * 15,
+      scale: 1.0,
+      rot: Math.floor(Math.random() * 40) - 20
+    };
+    setActiveStickers([...activeStickers, newSt]);
+    setSelectedStickerId(newSt.id);
+    synth.playPop();
+  };
+
+  const updateSelectedStickerParam = (param, value) => {
+    if (!selectedStickerId) return;
+    setActiveStickers(activeStickers.map(s => {
+      if (s.id === selectedStickerId) {
+        return { ...s, [param]: value };
+      }
+      return s;
+    }));
+  };
+
+  const deleteSelectedSticker = () => {
+    if (!selectedStickerId) return;
+    setActiveStickers(activeStickers.filter(s => s.id !== selectedStickerId));
+    setSelectedStickerId(null);
+    synth.playPop();
+  };
+
+  // Calendar logic for Year 2026
+  const MONTHS_2026 = [
+    { name: 'January', days: 31, startDay: 4 }, // Thursday
+    { name: 'February', days: 28, startDay: 7 }, // Sunday
+    { name: 'March', days: 31, startDay: 7 }, // Sunday
+    { name: 'April', days: 30, startDay: 3 }, // Wednesday
+    { name: 'May', days: 31, startDay: 5 }, // Friday
+    { name: 'June', days: 30, startDay: 1 }, // Monday
+    { name: 'July', days: 31, startDay: 3 }, // Wednesday
+    { name: 'August', days: 31, startDay: 6 }, // Saturday
+    { name: 'September', days: 30, startDay: 2 }, // Tuesday
+    { name: 'October', days: 31, startDay: 4 }, // Thursday
+    { name: 'November', days: 30, startDay: 7 }, // Sunday
+    { name: 'December', days: 31, startDay: 2 } // Tuesday
+  ];
+
+  const handleAddCalendarEvent = (e) => {
+    e.preventDefault();
+    if (!newEventText.trim()) return;
+    setMonthlyEvents({
+      ...monthlyEvents,
+      [newEventDate]: newEventText
+    });
+    setNewEventText('');
+    synth.playChime();
+  };
+
+  // Active theme colors extraction
+  const curTheme = THEMES[theme] || THEMES.fairyPink;
+
+  return (
+    <div className={`min-h-screen bg-[#fffcfc] pb-12 font-sans overflow-x-hidden ${curTheme.light}`}>
+      
+      {/* Decorative Top Star Banner */}
+      <div className="bg-rose-50 border-b border-rose-100 py-1 text-center text-xs text-rose-500 tracking-wider flex items-center justify-center gap-2">
+        <Sparkles className="w-3.5 h-3.5 text-rose-400 animate-pulse" />
+        <span>"Dream Big, Study Hard, Shine Bright" • Designed for Etsy Growth & Self-Alignment</span>
+        <Sparkles className="w-3.5 h-3.5 text-rose-400 animate-pulse" />
+      </div>
+
+      {/* Main Glassmorphic Header */}
+      <header className="max-w-7xl mx-auto px-4 pt-6 pb-2">
+        <div className="bg-white/80 backdrop-blur-md rounded-3xl p-6 border border-rose-100 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <div className="bg-rose-100 p-3.5 rounded-full border border-rose-200">
+              <Heart className="w-7 h-7 text-rose-500 fill-rose-300" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <input 
+                  type="text" 
+                  value={plannerName} 
+                  onChange={(e) => setPlannerName(e.target.value)}
+                  className="font-serif text-2xl md:text-3xl text-rose-700 bg-transparent border-b border-dashed border-rose-300 focus:outline-none focus:border-rose-500 font-bold max-w-xs md:max-w-md"
+                  placeholder="Your Planner Name"
+                />
+                <Edit2 className="w-4 h-4 text-rose-400 cursor-pointer" />
+              </div>
+              <p className="text-xs text-rose-400 mt-1 italic">Premium Manifestation & Academic Companion Hub</p>
+            </div>
+          </div>
+
+          {/* Master Controls */}
+          <div className="flex flex-wrap items-center gap-3">
+            <button 
+              onClick={toggleMute}
+              className="p-2.5 rounded-xl border border-rose-100 bg-white hover:bg-rose-50 text-rose-500 transition-all flex items-center gap-1.5"
+              title={isMuted ? "Unmute sound chimes" : "Mute sound chimes"}
+            >
+              {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+              <span className="text-xs font-semibold">{isMuted ? "Muted" : "Chimes"}</span>
+            </button>
+
+            <button 
+              onClick={handleExportData}
+              className="p-2.5 rounded-xl border border-rose-100 bg-white hover:bg-rose-50 text-rose-600 font-medium text-xs flex items-center gap-1.5"
+              title="Backup your dynamic content to sell or store"
+            >
+              <Download className="w-4 h-4" />
+              <span>Export Layout</span>
+            </button>
+
+            <label className="p-2.5 rounded-xl border border-rose-100 bg-white hover:bg-rose-50 text-rose-600 font-medium text-xs flex items-center gap-1.5 cursor-pointer">
+              <Upload className="w-4 h-4" />
+              <span>Import Config</span>
+              <input type="file" onChange={handleImportData} className="hidden" accept=".json" />
+            </label>
+
+            <div className="bg-rose-50/70 text-rose-600 px-3 py-1.5 rounded-xl text-xs font-serif italic border border-rose-100">
+              Year: 2026
+            </div>
+          </div>
+        </div>
+
+        {/* Manifestation Banner Block */}
+        <div className="mt-4 bg-gradient-to-r from-rose-50 via-white to-pink-50 rounded-2xl p-4 border border-rose-100 shadow-sm flex flex-col sm:flex-row items-center gap-4">
+          <span className="bg-rose-200/50 text-rose-700 text-xs px-2.5 py-1 rounded-full font-serif font-bold tracking-wider flex items-center gap-1">
+            <Sparkles className="w-3.5 h-3.5 text-rose-500" /> DAILY AFFIRMATION:
+          </span>
+          <input 
+            type="text"
+            value={manifestationText}
+            onChange={(e) => setManifestationText(e.target.value)}
+            className="w-full text-sm font-serif italic text-rose-600 bg-transparent focus:outline-none border-b border-transparent focus:border-rose-200"
+            placeholder="Type your daily manifestation boost here..."
+          />
+        </div>
+      </header>
+
+      {/* Main Tab Navigation Dashboard */}
+      <main className="max-w-7xl mx-auto px-4 grid grid-cols-1 lg:grid-cols-4 gap-6 mt-4 items-start">
+        
+        {/* SIDE NAVIGATION PANEL */}
+        <div className="lg:col-span-1 bg-white/90 rounded-3xl p-5 border border-rose-100 shadow-sm space-y-4">
+          <p className="text-xs font-bold text-rose-400 uppercase tracking-widest pl-2">My Navigation</p>
+          
+          <nav className="flex flex-col gap-2">
+            <button 
+              onClick={() => setCurrentTab('planner')}
+              className={`w-full py-3 px-4 rounded-2xl text-left flex items-center gap-3 transition-all ${currentTab === 'planner' ? curTheme.primary + ' font-bold shadow-xs' : 'text-rose-600 hover:bg-rose-50/60 font-medium'}`}
+            >
+              <Calendar className="w-5 h-5 text-rose-500" />
+              <span>Aesthetic Planners</span>
+            </button>
+
+            <button 
+              onClick={() => setCurrentTab('study')}
+              className={`w-full py-3 px-4 rounded-2xl text-left flex items-center gap-3 transition-all ${currentTab === 'study' ? curTheme.primary + ' font-bold shadow-xs' : 'text-rose-600 hover:bg-rose-50/60 font-medium'}`}
+            >
+              <BookOpen className="w-5 h-5 text-rose-500" />
+              <span>Study Suite</span>
+            </button>
+
+            <button 
+              onClick={() => setCurrentTab('journaling')}
+              className={`w-full py-3 px-4 rounded-2xl text-left flex items-center gap-3 transition-all ${currentTab === 'journaling' ? curTheme.primary + ' font-bold shadow-xs' : 'text-rose-600 hover:bg-rose-50/60 font-medium'}`}
+            >
+              <Feather className="w-5 h-5 text-rose-500" />
+              <span>Journal Prompt Stn</span>
+            </button>
+
+            <button 
+              onClick={() => setCurrentTab('stickers')}
+              className={`w-full py-3 px-4 rounded-2xl text-left flex items-center gap-3 transition-all ${currentTab === 'stickers' ? curTheme.primary + ' font-bold shadow-xs' : 'text-rose-600 hover:bg-rose-50/60 font-medium'}`}
+            >
+              <Smile className="w-5 h-5 text-rose-500" />
+              <span>Sticker Sheet Box</span>
+            </button>
+
+            <button 
+              onClick={() => setCurrentTab('config')}
+              className={`w-full py-3 px-4 rounded-2xl text-left flex items-center gap-3 transition-all ${currentTab === 'config' ? curTheme.primary + ' font-bold shadow-xs' : 'text-rose-600 hover:bg-rose-50/60 font-medium'}`}
+            >
+              <Edit2 className="w-5 h-5 text-rose-500" />
+              <span>Seller / Decor Tool</span>
+            </button>
+          </nav>
+
+          <hr className="border-rose-100 my-4" />
+
+          {/* Quick-to-do overlay widget */}
+          <div className="bg-rose-50/60 p-4 rounded-2xl border border-rose-100 space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-rose-700 tracking-wide flex items-center gap-1">
+                <CheckSquare className="w-4 h-4 text-rose-500" /> Quick-Task List
+              </span>
+              <span className="text-[10px] text-white bg-rose-400 px-2 py-0.5 rounded-full">
+                {todos.filter(t => !t.done).length} active
+              </span>
+            </div>
+
+            <div className="space-y-2 max-h-48 overflow-y-auto">
+              {todos.map(todo => (
+                <div 
+                  key={todo.id} 
+                  onClick={() => toggleTodo(todo.id)}
+                  className={`flex items-start gap-2 p-1.5 rounded-lg hover:bg-white/70 transition-all cursor-pointer ${todo.done ? 'opacity-60 line-through text-rose-400' : 'text-rose-700 font-medium'}`}
+                >
+                  <div className={`w-4 h-4 rounded mt-0.5 flex items-center justify-center border transition-all ${todo.done ? 'bg-rose-400 border-rose-400 text-white' : 'border-rose-300'}`}>
+                    {todo.done && <Check className="w-3 h-3 stroke-[3]" />}
+                  </div>
+                  <div className="text-xs leading-relaxed flex-1">
+                    {todo.text} <span className="text-[9px] text-rose-400 block">{todo.time}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <form onSubmit={handleAddTodo} className="space-y-1.5 pt-2">
+              <input 
+                type="text" 
+                placeholder="New daily task..." 
+                value={newTodoText}
+                onChange={(e) => setNewTodoText(e.target.value)}
+                className="w-full text-xs p-2 rounded-xl bg-white border border-rose-200 text-rose-800 focus:outline-none focus:border-rose-400"
+              />
+              <div className="flex gap-1">
+                <input 
+                  type="text" 
+                  value={newTodoTime}
+                  onChange={(e) => setNewTodoTime(e.target.value)}
+                  className="w-1/2 text-[10px] p-1.5 rounded-lg bg-white border border-rose-200 text-center text-rose-700"
+                  placeholder="e.g. 10:00 AM"
+                />
+                <button type="submit" className="w-1/2 text-xs font-bold py-1 px-2 rounded-lg bg-rose-400 hover:bg-rose-500 text-white transition-all flex items-center justify-center gap-1">
+                  <Plus className="w-3.5 h-3.5" /> Add
+                </button>
+              </div>
+            </form>
+          </div>
+
+          {/* Sweet Coquette Water Tracker */}
+          <div className="bg-rose-50/50 p-4 rounded-2xl border border-rose-100 text-center">
+            <span className="text-xs font-bold text-rose-700 block mb-2">🌸 Hydration Manifestation</span>
+            <div className="flex justify-center gap-1.5">
+              {[1, 2, 3, 4, 5, 6, 7, 8].map(glass => {
+                const isChecked = glass <= 4; // Mock state
+                return (
+                  <button 
+                    key={glass} 
+                    onClick={() => { synth.playPop(); }} 
+                    className={`w-6 h-7 rounded-b-xl rounded-t-xs border flex items-end justify-center transition-all ${isChecked ? 'bg-rose-300 border-rose-400 text-white' : 'bg-white border-rose-200 hover:bg-rose-50'}`}
+                  >
+                    <span className="text-[7px] font-bold pb-1">💧</span>
+                  </button>
+                );
+              })}
+            </div>
+            <span className="text-[10px] text-rose-400 mt-2 block">Tip: Drink 1 matching glass for every study block!</span>
+          </div>
+
+        </div>
+
+        {/* WORKSPACE & CANVAS AREA WITH ACTIVE DRAGGABLE STICKER OVERLAY */}
+        <div 
+          className="lg:col-span-3 min-h-[500px] bg-white rounded-3xl p-6 border border-rose-100 shadow-sm relative overflow-hidden"
+          onMouseMove={handleContainerMouseMove}
+          onMouseUp={handleStickerDrop}
+          onTouchMove={handleContainerTouchMove}
+          onTouchEnd={handleStickerDrop}
+          style={{
+            backgroundImage: `radial-gradient(${curTheme.accentColor} 1px, transparent 1px)`,
+            backgroundSize: '24px 24px'
+          }}
+        >
+          {/* Aesthetic Bow Corner Overlays */}
+          <div className="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-rose-200 rounded-tl-2xl pointer-events-none"></div>
+          <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-rose-200 rounded-tr-2xl pointer-events-none"></div>
+          <div className="absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 border-rose-200 rounded-bl-2xl pointer-events-none"></div>
+          <div className="absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 border-rose-200 rounded-br-2xl pointer-events-none"></div>
+
+          {/* ACTIVE DRAGGABLE STICKERS RENDERED IN CANVAS */}
+          {activeStickers.map(st => {
+            const asset = STICKERS_ASSETS.find(a => a.id === st.type);
+            const isSelected = selectedStickerId === st.id;
+            return (
+              <div
+                key={st.id}
+                className={`absolute cursor-grab active:cursor-grabbing transition-shadow z-50 ${isSelected ? 'ring-2 ring-rose-400 ring-offset-1 bg-white/20 rounded-lg p-1' : ''}`}
+                style={{
+                  left: `${st.x}%`,
+                  top: `${st.y}%`,
+                  transform: `scale(${st.scale}) rotate(${st.rot}deg)`,
+                  userSelect: 'none'
+                }}
+                onMouseDown={(e) => handleStickerMouseDown(e, st.id, st.x, st.y)}
+                onTouchStart={(e) => {
+                  const touch = e.touches[0];
+                  handleStickerMouseDown(e, st.id, st.x, st.y);
+                  dragOffsetRef.current = {
+                    x: ((touch.clientX - e.currentTarget.parentElement.getBoundingClientRect().left) / e.currentTarget.parentElement.getBoundingClientRect().width) * 100 - st.x,
+                    y: ((touch.clientY - e.currentTarget.parentElement.getBoundingClientRect().top) / e.currentTarget.parentElement.getBoundingClientRect().height) * 100 - st.y
+                  };
+                }}
+              >
+                {asset ? asset.svg : null}
+                
+                {/* Visual drag guides when selected */}
+                {isSelected && (
+                  <div className="absolute -top-7 left-1/2 transform -translate-x-1/2 flex items-center gap-1.5 bg-rose-500 text-white text-[10px] py-0.5 px-2 rounded-md shadow-xs pointer-events-auto">
+                    <button 
+                      onClick={(e) => { e.stopPropagation(); updateSelectedStickerParam('scale', Math.max(0.5, st.scale - 0.15)); }}
+                      className="font-bold hover:scale-110 px-1"
+                      title="Shrink"
+                    >
+                      -
+                    </button>
+                    <span>Size</span>
+                    <button 
+                      onClick={(e) => { e.stopPropagation(); updateSelectedStickerParam('scale', Math.min(2.5, st.scale + 0.15)); }}
+                      className="font-bold hover:scale-110 px-1"
+                      title="Grow"
+                    >
+                      +
+                    </button>
+                    <button 
+                      onClick={(e) => { e.stopPropagation(); deleteSelectedSticker(); }}
+                      className="text-white hover:text-rose-200 ml-1.5"
+                      title="Remove Sticker"
+                    >
+                      <Trash className="w-3 h-3" />
+                    </button>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+
+          {/* TAB CONTENT: 1. AESTHETIC PLANNERS */}
+          {currentTab === 'planner' && (
+            <div className="space-y-6">
+              
+              {/* Internal Subtab Switcher */}
+              <div className="flex justify-center gap-2 border-b border-rose-100 pb-3">
+                {['daily', 'weekly', 'monthly'].map(sub => (
+                  <button
+                    key={sub}
+                    onClick={() => { setPlannerSubTab(sub); synth.playPop(); }}
+                    className={`px-4 py-2 rounded-xl text-xs font-bold tracking-wider capitalize transition-all ${plannerSubTab === sub ? curTheme.primary : 'text-rose-600 hover:bg-rose-50/50'}`}
+                  >
+                    🌸 {sub} Planner View
+                  </button>
+                ))}
+              </div>
+
+              {/* Subtab: DAILY PLANNER */}
+              {plannerSubTab === 'daily' && (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  
+                  {/* Left Schedule Timeline */}
+                  <div className="md:col-span-2 bg-white/70 p-5 rounded-2xl border border-rose-100/70 space-y-3">
+                    <h3 className="font-serif text-lg text-rose-700 flex items-center gap-2">
+                      <span>Timeline Schedule</span>
+                      <span className="text-xs text-rose-400 font-sans">(Click any block to customize)</span>
+                    </h3>
+                    
+                    <div className="divide-y divide-rose-100 max-h-[380px] overflow-y-auto pr-2">
+                      {Object.entries(dailyTimeline).map(([time, desc]) => (
+                        <div key={time} className="py-2.5 flex items-start gap-3">
+                          <span className="text-[11px] font-bold text-rose-500 w-16 pt-0.5">{time}</span>
+                          {editingHour === time ? (
+                            <div className="flex-1 flex gap-2">
+                              <input 
+                                type="text"
+                                value={editHourValue}
+                                onChange={(e) => setEditHourValue(e.target.value)}
+                                className="flex-1 text-xs p-1 border border-rose-200 rounded-md focus:outline-none focus:border-rose-400"
+                              />
+                              <button 
+                                onClick={() => {
+                                  setDailyTimeline({ ...dailyTimeline, [time]: editHourValue });
+                                  setEditingHour(null);
+                                  synth.playChime();
+                                }}
+                                className="bg-green-400 text-white text-[10px] px-2 py-1 rounded-md"
+                              >
+                                Save
+                              </button>
+                            </div>
+                          ) : (
+                            <p 
+                              onClick={() => {
+                                setEditingHour(time);
+                                setEditHourValue(desc);
+                              }}
+                              className="text-xs text-rose-800 font-medium hover:bg-rose-50/70 p-1 rounded cursor-pointer flex-1"
+                            >
+                              {desc || <span className="text-rose-300 italic">Tap to set event / manifesting task...</span>}
+                            </p>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Right Daily Focus Block */}
+                  <div className="bg-rose-50/30 p-5 rounded-2xl border border-rose-100 flex flex-col justify-between space-y-4">
+                    <div className="space-y-3">
+                      <div className="text-center">
+                        <span className="text-[26px]">🎀</span>
+                        <h4 className="font-serif text-md text-rose-700 font-bold">Top Priorities Today</h4>
+                      </div>
+                      <div className="space-y-2">
+                        <div className="bg-white/80 p-2.5 rounded-xl border border-rose-100 flex items-center gap-2">
+                          <span className="text-rose-400 font-serif">1.</span>
+                          <input type="text" placeholder="Finish chemistry card review" className="bg-transparent text-xs text-rose-800 w-full focus:outline-none" />
+                        </div>
+                        <div className="bg-white/80 p-2.5 rounded-xl border border-rose-100 flex items-center gap-2">
+                          <span className="text-rose-400 font-serif">2.</span>
+                          <input type="text" placeholder="Detail new Etsy listing copy" className="bg-transparent text-xs text-rose-800 w-full focus:outline-none" />
+                        </div>
+                        <div className="bg-white/80 p-2.5 rounded-xl border border-rose-100 flex items-center gap-2">
+                          <span className="text-rose-400 font-serif">3.</span>
+                          <input type="text" placeholder="Set soft quiet time space" className="bg-transparent text-xs text-rose-800 w-full focus:outline-none" />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="bg-white/80 p-3.5 rounded-xl border border-rose-100 space-y-1.5">
+                      <span className="text-[11px] font-bold text-rose-600 block text-center">💖 Self-Care Note Today</span>
+                      <textarea 
+                        className="w-full h-20 text-[11px] text-rose-700 bg-transparent resize-none focus:outline-none" 
+                        placeholder="Reminder to self: Gentle progress is still real growth. You do not have to be busy to be successful."
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Subtab: WEEKLY PLANNER */}
+              {plannerSubTab === 'weekly' && (
+                <div className="space-y-4">
+                  <div className="text-center mb-2">
+                    <span className="text-lg">🌸</span>
+                    <h3 className="font-serif text-xl text-rose-700 inline-block ml-1">Weekly Horizon Manifestations</h3>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-7 gap-3">
+                    {Object.entries(weeklyNotes).map(([day, note]) => (
+                      <div key={day} className="bg-white/90 p-3.5 rounded-xl border border-rose-100 flex flex-col justify-between gap-2.5 min-h-[140px] shadow-2xs hover:shadow-xs transition-all">
+                        <div>
+                          <span className="text-xs font-bold text-rose-600 tracking-wider block border-b border-rose-50 pb-1 mb-1.5">{day}</span>
+                          <textarea
+                            value={note}
+                            onChange={(e) => setWeeklyNotes({ ...weeklyNotes, [day]: e.target.value })}
+                            className="w-full h-24 text-[10px] text-rose-800 bg-transparent resize-none focus:outline-none leading-relaxed font-medium"
+                            placeholder="Add goal..."
+                          />
+                        </div>
+                        <span className="text-[9px] text-rose-400 italic text-right block">Edited ✍️</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Subtab: MONTHLY PLANNER */}
+              {plannerSubTab === 'monthly' && (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  
+                  {/* Left Dynamic Calendar Grid for Year 2026 */}
+                  <div className="md:col-span-2 bg-white/70 p-5 rounded-2xl border border-rose-100">
+                    <div className="flex items-center justify-between mb-4">
+                      <button 
+                        onClick={() => { setSelectedMonth(prev => prev > 0 ? prev - 1 : 11); synth.playPop(); }}
+                        className="p-1 rounded-full hover:bg-rose-50 text-rose-600"
+                      >
+                        <ChevronLeft className="w-5 h-5" />
+                      </button>
+                      <h4 className="font-serif text-lg text-rose-700 font-bold">
+                        {MONTHS_2026[selectedMonth].name} 2026
+                      </h4>
+                      <button 
+                        onClick={() => { setSelectedMonth(prev => prev < 11 ? prev + 1 : 0); synth.playPop(); }}
+                        className="p-1 rounded-full hover:bg-rose-50 text-rose-600"
+                      >
+                        <ChevronRight className="w-5 h-5" />
+                      </button>
+                    </div>
+
+                    {/* Weekdays headers */}
+                    <div className="grid grid-cols-7 text-center text-[10px] font-bold text-rose-400 mb-2">
+                      <span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span>
+                    </div>
+
+                    {/* Days Render */}
+                    <div className="grid grid-cols-7 gap-1 text-center">
+                      {/* Placeholders for start day */}
+                      {Array.from({ length: MONTHS_2026[selectedMonth].startDay - 1 }).map((_, idx) => (
+                        <div key={`blank-${idx}`} className="h-9"></div>
+                      ))}
+
+                      {/* Actual Days */}
+                      {Array.from({ length: MONTHS_2026[selectedMonth].days }).map((_, idx) => {
+                        const dayNum = idx + 1;
+                        const dateStr = `2026-${String(selectedMonth + 1).padStart(2, '0')}-${String(dayNum).padStart(2, '0')}`;
+                        const event = monthlyEvents[dateStr];
+                        const isToday = dayNum === 14 && selectedMonth === 6; // July 14, 2026 check
+
+                        return (
+                          <div 
+                            key={dayNum} 
+                            onClick={() => {
+                              setNewEventDate(dateStr);
+                              synth.playPop();
+                            }}
+                            className={`h-9 relative rounded-md flex flex-col items-center justify-center cursor-pointer transition-all ${isToday ? 'bg-rose-400 text-white font-bold shadow-xs' : 'hover:bg-rose-50 text-rose-800'} ${event ? 'border border-rose-300 bg-rose-50/50' : ''}`}
+                            title={event}
+                          >
+                            <span className="text-xs">{dayNum}</span>
+                            {event && (
+                              <span className="absolute bottom-0.5 w-1.5 h-1.5 rounded-full bg-rose-500"></span>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Right Month Event Planner Panel */}
+                  <div className="bg-rose-50/30 p-5 rounded-2xl border border-rose-100 flex flex-col justify-between space-y-4">
+                    <div>
+                      <h4 className="font-serif text-sm text-rose-700 font-bold mb-3 flex items-center gap-1.5">
+                        <Sparkles className="w-4 h-4 text-rose-500" />
+                        <span>Date Specific Intentions</span>
+                      </h4>
+
+                      <div className="space-y-2 max-h-[180px] overflow-y-auto pr-1">
+                        {Object.entries(monthlyEvents).map(([date, text]) => (
+                          <div key={date} className="bg-white/90 p-2 rounded-xl border border-rose-100 text-xs text-rose-800">
+                            <span className="font-bold text-rose-500 block text-[10px]">{date}</span>
+                            {text}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <form onSubmit={handleAddCalendarEvent} className="bg-white/80 p-3 rounded-xl border border-rose-100 space-y-2">
+                      <span className="text-[10px] font-bold text-rose-600 block">Create Event for Date:</span>
+                      <input 
+                        type="date"
+                        value={newEventDate}
+                        onChange={(e) => setNewEventDate(e.target.value)}
+                        className="w-full text-xs p-1.5 rounded-lg border border-rose-200 focus:outline-none"
+                      />
+                      <input 
+                        type="text"
+                        placeholder="Add intention / event..."
+                        value={newEventText}
+                        onChange={(e) => setNewEventText(e.target.value)}
+                        className="w-full text-xs p-1.5 rounded-lg border border-rose-200 focus:outline-none text-rose-800"
+                      />
+                      <button type="submit" className="w-full py-1.5 rounded-lg bg-rose-400 hover:bg-rose-500 text-white font-bold text-xs">
+                        Save to Calendar
+                      </button>
+                    </form>
+                  </div>
+                </div>
+              )}
+
+            </div>
+          )}
+
+          {/* TAB CONTENT: 2. STUDY SUITE */}
+          {currentTab === 'study' && (
+            <div className="space-y-6">
+              
+              {/* Header */}
+              <div className="text-center">
+                <span className="text-xl">⭐️</span>
+                <h3 className="font-serif text-2xl text-rose-700 inline-block ml-1">Study Suite & Companion Console</h3>
+                <p className="text-xs text-rose-400">Everything needed to study efficiently & record progress to build outstanding habits.</p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                
+                {/* Visual Circle Pomodoro Timer Block */}
+                <div className="bg-white/80 p-5 rounded-2xl border border-rose-100 flex flex-col items-center justify-between gap-4">
+                  <span className="text-xs font-bold text-rose-600 tracking-wider">⏱️ BLISSFUL POMODORO TIMER</span>
+                  
+                  {/* Timer Circular visual ring */}
+                  <div className="relative w-36 h-36 flex items-center justify-center">
+                    <svg className="w-full h-full transform -rotate-90">
+                      <circle cx="72" cy="72" r="64" stroke="#ffe4e6" strokeWidth="8" fill="none" />
+                      <circle 
+                        cx="72" 
+                        cy="72" 
+                        r="64" 
+                        stroke="#f43f5e" 
+                        strokeWidth="8" 
+                        fill="none" 
+                        strokeDasharray={2 * Math.PI * 64}
+                        strokeDashoffset={2 * Math.PI * 64 * (1 - (timerMinutes * 60 + timerSeconds) / (timerTotalSet * 60))}
+                        className="transition-all duration-1000"
+                      />
+                    </svg>
+                    <div className="absolute text-center">
+                      <span className="text-2xl font-bold text-rose-700 block">
+                        {String(timerMinutes).padStart(2, '0')}:{String(timerSeconds).padStart(2, '0')}
+                      </span>
+                      <span className="text-[9px] uppercase tracking-wider text-rose-400 font-bold block mt-1">Study block</span>
+                    </div>
+                  </div>
+
+                  {/* Custom minutes setter & Controls */}
+                  <div className="flex flex-col gap-2 w-full">
+                    <div className="flex gap-2">
+                      <button 
+                        onClick={() => { setTimerRunning(!timerRunning); synth.playPop(); }} 
+                        className="flex-1 py-1.5 rounded-lg bg-rose-400 hover:bg-rose-500 text-white font-bold text-xs flex items-center justify-center gap-1"
+                      >
+                        {timerRunning ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
+                        <span>{timerRunning ? 'Pause' : 'Start'}</span>
+                      </button>
+                      <button 
+                        onClick={() => {
+                          setTimerRunning(false);
+                          setTimerMinutes(timerTotalSet);
+                          setTimerSeconds(0);
+                          synth.playPop();
+                        }} 
+                        className="py-1.5 px-3 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 text-xs font-bold"
+                        title="Reset current cycle"
+                      >
+                        <RotateCcw className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+
+                    <div className="flex items-center gap-1.5 mt-1 justify-center">
+                      <span className="text-[10px] text-rose-500 font-bold">Set Minutes:</span>
+                      <input 
+                        type="number" 
+                        value={timerTotalSet}
+                        onChange={(e) => {
+                          const val = Math.max(1, Math.min(180, Number(e.target.value)));
+                          setTimerTotalSet(val);
+                          setTimerMinutes(val);
+                          setTimerSeconds(0);
+                        }}
+                        className="w-12 text-center text-xs p-1 rounded-md border border-rose-200 text-rose-800"
+                        min="1"
+                        max="180"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Interactive Flashcard Station (3D CSS Card Flip) */}
+                <div className="bg-white/80 p-5 rounded-2xl border border-rose-100 flex flex-col justify-between min-h-[250px]">
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-xs font-bold text-rose-600 tracking-wider">🎴 CUTE FLASHCARDS</span>
+                      <select 
+                        value={activeDeckFilter}
+                        onChange={(e) => setActiveDeckFilter(e.target.value)}
+                        className="text-[10px] border border-rose-200 rounded p-1 bg-transparent text-rose-700"
+                      >
+                        <option value="All">All Topics</option>
+                        <option value="Study">Study</option>
+                        <option value="Healing">Healing</option>
+                        <option value="Manifestation">Manifestation</option>
+                      </select>
+                    </div>
+
+                    {/* Render Filtered Cards (Horizontal carousel format) */}
+                    <div className="space-y-2 mt-2">
+                      {flashDecks
+                        .filter(c => activeDeckFilter === 'All' || c.category === activeDeckFilter)
+                        .map(card => {
+                          const isFlipped = flippedCardId === card.id;
+                          return (
+                            <div 
+                              key={card.id} 
+                              onClick={() => {
+                                setFlippedCardId(isFlipped ? null : card.id);
+                                synth.playPop();
+                              }}
+                              className="perspective-500 cursor-pointer h-24"
+                            >
+                              <div className={`relative w-full h-full duration-500 transform-style-3d ${isFlipped ? 'rotate-y-180' : ''}`}>
+                                {/* Front Face */}
+                                <div className="absolute inset-0 bg-rose-50/50 hover:bg-rose-50 border border-rose-100 rounded-xl p-3 flex flex-col justify-between backface-hidden">
+                                  <span className="text-[9px] uppercase font-bold tracking-widest text-rose-400">{card.category}</span>
+                                  <p className="text-xs text-rose-700 font-bold text-center mt-1">{card.front}</p>
+                                  <span className="text-[8px] text-right text-rose-400 italic">Click to Flip 🌸</span>
+                                </div>
+                                {/* Back Face */}
+                                <div className="absolute inset-0 bg-rose-100 border border-rose-200 rounded-xl p-3 flex flex-col justify-between rotate-y-180 backface-hidden">
+                                  <span className="text-[9px] uppercase font-bold tracking-widest text-rose-600">Response</span>
+                                  <p className="text-xs text-rose-900 font-medium text-center leading-relaxed">{card.back}</p>
+                                  <span className="text-[8px] text-right text-rose-500 italic">Click to close</span>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                    </div>
+                  </div>
+
+                  {/* Create New Flashcard Form */}
+                  <form 
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      if (!newFlashcard.front || !newFlashcard.back) return;
+                      setFlashDecks([...flashDecks, { id: Date.now(), ...newFlashcard }]);
+                      setNewFlashcard({ front: '', back: '', category: 'Study' });
+                      synth.playChime();
+                    }}
+                    className="bg-rose-50/40 p-2.5 rounded-xl border border-rose-100 mt-3 space-y-1.5"
+                  >
+                    <div className="flex gap-1.5">
+                      <input 
+                        type="text" 
+                        placeholder="Front (Prompt)" 
+                        value={newFlashcard.front}
+                        onChange={(e) => setNewFlashcard({ ...newFlashcard, front: e.target.value })}
+                        className="w-1/2 text-[10px] p-1 border border-rose-200 rounded bg-white"
+                      />
+                      <input 
+                        type="text" 
+                        placeholder="Back (Answer)" 
+                        value={newFlashcard.back}
+                        onChange={(e) => setNewFlashcard({ ...newFlashcard, back: e.target.value })}
+                        className="w-1/2 text-[10px] p-1 border border-rose-200 rounded bg-white"
+                      />
+                    </div>
+                    <div className="flex gap-1.5 items-center">
+                      <select
+                        value={newFlashcard.category}
+                        onChange={(e) => setNewFlashcard({ ...newFlashcard, category: e.target.value })}
+                        className="text-[9px] p-1 border border-rose-200 rounded w-1/2 bg-white"
+                      >
+                        <option value="Study">Study</option>
+                        <option value="Healing">Healing</option>
+                        <option value="Manifestation">Manifestation</option>
+                      </select>
+                      <button type="submit" className="w-1/2 py-1 bg-rose-400 hover:bg-rose-500 text-white rounded text-[10px] font-bold">
+                        Add Card
+                      </button>
+                    </div>
+                  </form>
+                </div>
+
+                {/* Interactive Dynamic Quiz Station */}
+                <div className="bg-white/80 p-5 rounded-2xl border border-rose-100 flex flex-col justify-between min-h-[250px]">
+                  <div>
+                    <span className="text-xs font-bold text-rose-600 tracking-wider block mb-2">📝 INTERACTIVE QUIZ MASTER</span>
+                    
+                    {!quizActive && !quizFinished ? (
+                      <div className="text-center py-4 space-y-3">
+                        <p className="text-xs text-rose-700 leading-relaxed font-medium">Create custom quizzes to lock in high grades. Check knowledge with matching choices.</p>
+                        <button 
+                          onClick={() => {
+                            if (quizQuestions.length === 0) {
+                              alert("Please add some questions first!");
+                              return;
+                            }
+                            setQuizActive(true);
+                            setCurrentQuizIndex(0);
+                            setQuizScore(0);
+                            setSelectedQuizAns(null);
+                            synth.playChime();
+                          }}
+                          className="py-1.5 px-4 rounded-xl bg-rose-400 hover:bg-rose-500 text-white font-bold text-xs"
+                        >
+                          Launch Practice Quiz
+                        </button>
+                      </div>
+                    ) : quizActive ? (
+                      <div className="space-y-3">
+                        <div className="flex justify-between items-center text-[10px] text-rose-400">
+                          <span>Question {currentQuizIndex + 1} of {quizQuestions.length}</span>
+                          <span>Score: {quizScore}</span>
+                        </div>
+                        <p className="text-xs text-rose-800 font-bold">{quizQuestions[currentQuizIndex].question}</p>
+                        
+                        <div className="space-y-1.5">
+                          {quizQuestions[currentQuizIndex].options.map((opt, oIdx) => (
+                            <button
+                              key={oIdx}
+                              onClick={() => setSelectedQuizAns(oIdx)}
+                              className={`w-full text-left text-xs p-2 rounded-lg border transition-all ${selectedQuizAns === oIdx ? 'bg-rose-100 border-rose-300 text-rose-900 font-bold' : 'bg-rose-50/40 border-rose-100 text-rose-700 hover:bg-rose-50'}`}
+                            >
+                              {opt}
+                            </button>
+                          ))}
+                        </div>
+
+                        <button
+                          onClick={() => {
+                            if (selectedQuizAns === null) return;
+                            const isCorrect = selectedQuizAns === quizQuestions[currentQuizIndex].answer;
+                            if (isCorrect) {
+                              setQuizScore(prev => prev + 1);
+                              synth.playChime();
+                            } else {
+                              synth.playPop();
+                            }
+
+                            if (currentQuizIndex + 1 < quizQuestions.length) {
+                              setCurrentQuizIndex(prev => prev + 1);
+                              setSelectedQuizAns(null);
+                            } else {
+                              setQuizActive(false);
+                              setQuizFinished(true);
+                              synth.playBell();
+                            }
+                          }}
+                          className="w-full py-1.5 bg-rose-500 text-white font-bold rounded-lg text-xs"
+                        >
+                          Submit Answer
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="text-center py-4 space-y-3">
+                        <p className="text-md font-serif text-rose-800 font-bold">Quiz Finished! 🎉</p>
+                        <p className="text-xs text-rose-600 font-semibold">Your Final Score: {quizScore} / {quizQuestions.length}</p>
+                        <button 
+                          onClick={() => {
+                            setQuizFinished(false);
+                            synth.playPop();
+                          }}
+                          className="py-1 px-3 bg-rose-50 text-rose-600 border border-rose-200 rounded text-xs"
+                        >
+                          Reset Quiz Panel
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Add new question builder form */}
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      if (!newQuizQ.question || !newQuizQ.opt1) return;
+                      setQuizQuestions([...quizQuestions, {
+                        id: Date.now(),
+                        question: newQuizQ.question,
+                        options: [newQuizQ.opt1, newQuizQ.opt2, newQuizQ.opt3, newQuizQ.opt4],
+                        answer: Number(newQuizQ.correct)
+                      }]);
+                      setNewQuizQ({ question: '', opt1: '', opt2: '', opt3: '', opt4: '', correct: 0 });
+                      synth.playChime();
+                    }}
+                    className="bg-rose-50/40 p-2.5 rounded-xl border border-rose-100 mt-2 space-y-1.5"
+                  >
+                    <input 
+                      type="text" 
+                      placeholder="Add Quiz Question..." 
+                      value={newQuizQ.question}
+                      onChange={(e) => setNewQuizQ({ ...newQuizQ, question: e.target.value })}
+                      className="w-full text-[10px] p-1 border border-rose-200 rounded bg-white"
+                    />
+                    <div className="grid grid-cols-2 gap-1">
+                      <input type="text" placeholder="Opt 1" value={newQuizQ.opt1} onChange={(e) => setNewQuizQ({ ...newQuizQ, opt1: e.target.value })} className="text-[9px] p-1 border border-rose-200 rounded bg-white" />
+                      <input type="text" placeholder="Opt 2" value={newQuizQ.opt2} onChange={(e) => setNewQuizQ({ ...newQuizQ, opt2: e.target.value })} className="text-[9px] p-1 border border-rose-200 rounded bg-white" />
+                      <input type="text" placeholder="Opt 3" value={newQuizQ.opt3} onChange={(e) => setNewQuizQ({ ...newQuizQ, opt3: e.target.value })} className="text-[9px] p-1 border border-rose-200 rounded bg-white" />
+                      <input type="text" placeholder="Opt 4" value={newQuizQ.opt4} onChange={(e) => setNewQuizQ({ ...newQuizQ, opt4: e.target.value })} className="text-[9px] p-1 border border-rose-200 rounded bg-white" />
+                    </div>
+                    <div className="flex gap-2 items-center">
+                      <span className="text-[9px] text-rose-500 font-bold">Answer key (0-3):</span>
+                      <input type="number" min="0" max="3" value={newQuizQ.correct} onChange={(e) => setNewQuizQ({ ...newQuizQ, correct: e.target.value })} className="w-10 text-center text-[9px] p-1 border border-rose-200 rounded" />
+                      <button type="submit" className="flex-1 py-1 bg-rose-400 hover:bg-rose-500 text-white rounded text-[10px] font-bold">
+                        Add Question
+                      </button>
+                    </div>
+                  </form>
+                </div>
+
+              </div>
+
+              {/* Bottom: SCHOOL WORK CHECKER TABLE */}
+              <div className="bg-white/70 p-5 rounded-2xl border border-rose-100">
+                <h4 className="font-serif text-lg text-rose-700 font-bold mb-3 flex items-center gap-1.5">
+                  <CheckSquare className="w-5 h-5 text-rose-500" />
+                  <span>Interactive School Work Checker</span>
+                </h4>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs text-rose-800">
+                    <thead className="bg-rose-50/70 text-[10px] font-bold tracking-wider text-rose-600">
+                      <tr>
+                        <th className="p-2.5">Task Title</th>
+                        <th className="p-2.5">Subject</th>
+                        <th className="p-2.5">Due Date</th>
+                        <th className="p-2.5">Status Badge</th>
+                        <th className="p-2.5">Grade</th>
+                        <th className="p-2.5 text-center">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-rose-50">
+                      {assignments.map(asg => (
+                        <tr key={asg.id} className="hover:bg-white/90">
+                          <td className="p-2.5 font-bold">{asg.title}</td>
+                          <td className="p-2.5">
+                            <span className="px-2 py-0.5 rounded bg-rose-100 text-[10px] font-bold text-rose-700">{asg.subject}</span>
+                          </td>
+                          <td className="p-2.5 font-serif">{asg.dueDate}</td>
+                          <td className="p-2.5">
+                            <select 
+                              value={asg.status}
+                              onChange={(e) => {
+                                setAssignments(assignments.map(a => a.id === asg.id ? { ...a, status: e.target.value } : a));
+                                synth.playChime();
+                              }}
+                              className={`p-1 rounded text-[10px] font-bold border ${asg.status === 'Graded' ? 'bg-green-50 text-green-700 border-green-200' : asg.status === 'Submitted' ? 'bg-blue-50 text-blue-700 border-blue-200' : 'bg-amber-50 text-amber-700 border-amber-200'}`}
+                            >
+                              <option value="Not Started">Not Started</option>
+                              <option value="In Progress">In Progress</option>
+                              <option value="Submitted">Submitted</option>
+                              <option value="Graded">Graded</option>
+                            </select>
+                          </td>
+                          <td className="p-2.5">
+                            <input 
+                              type="text" 
+                              value={asg.grade} 
+                              onChange={(e) => setAssignments(assignments.map(a => a.id === asg.id ? { ...a, grade: e.target.value } : a))}
+                              placeholder="Add score"
+                              className="w-16 p-1 border border-rose-150 rounded text-center text-xs bg-transparent"
+                            />
+                          </td>
+                          <td className="p-2.5 text-center">
+                            <button 
+                              onClick={() => { setAssignments(assignments.filter(a => a.id !== asg.id)); synth.playPop(); }}
+                              className="p-1 hover:text-rose-500 text-rose-300"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Form to append new assignment tracker item */}
+                <form 
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    if (!newAssignment.title) return;
+                    setAssignments([...assignments, { id: Date.now(), ...newAssignment, grade: '' }]);
+                    setNewAssignment({ title: '', subject: 'Math', dueDate: '2026-05-15', status: 'Not Started' });
+                    synth.playChime();
+                  }}
+                  className="mt-4 bg-rose-50/40 p-4 rounded-xl border border-rose-100 flex flex-wrap gap-3 items-end"
+                >
+                  <div className="flex-1 min-w-[150px]">
+                    <span className="text-[10px] font-bold text-rose-500 block mb-1">New Assignment Title:</span>
+                    <input 
+                      type="text"
+                      placeholder="e.g. History Presentation Prep"
+                      value={newAssignment.title}
+                      onChange={(e) => setNewAssignment({ ...newAssignment, title: e.target.value })}
+                      className="w-full text-xs p-2 rounded-lg border border-rose-200 bg-white"
+                    />
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-bold text-rose-500 block mb-1">Subject Tag:</span>
+                    <select
+                      value={newAssignment.subject}
+                      onChange={(e) => setNewAssignment({ ...newAssignment, subject: e.target.value })}
+                      className="text-xs p-2 rounded-lg border border-rose-200 bg-white"
+                    >
+                      <option value="Math">Mathematics</option>
+                      <option value="Chemistry">Chemistry</option>
+                      <option value="Business">Business</option>
+                      <option value="Literature">Literature</option>
+                      <option value="Arts">Fine Arts</option>
+                    </select>
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-bold text-rose-500 block mb-1">Due Date:</span>
+                    <input 
+                      type="date"
+                      value={newAssignment.dueDate}
+                      onChange={(e) => setNewAssignment({ ...newAssignment, dueDate: e.target.value })}
+                      className="text-xs p-2 rounded-lg border border-rose-200 bg-white"
+                    />
+                  </div>
+                  <button type="submit" className="py-2 px-5 bg-rose-400 hover:bg-rose-500 text-white font-bold rounded-lg text-xs">
+                    Append Assignment
+                  </button>
+                </form>
+              </div>
+
+            </div>
+          )}
+
+          {/* TAB CONTENT: 3. JOURNAL PROMPT STATION */}
+          {currentTab === 'journaling' && (
+            <div className="space-y-6">
+              
+              {/* Header */}
+              <div className="text-center">
+                <span className="text-xl">🌸</span>
+                <h3 className="font-serif text-2xl text-rose-700 inline-block ml-1">Journal Prompts for Healing & Growth</h3>
+                <p className="text-xs text-rose-400">Select any extracted image prompt below, complete your daily journal, and store your emotional progress.</p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                
+                {/* Left controls: Prompt Category Selector */}
+                <div className="bg-white/80 p-5 rounded-2xl border border-rose-100 space-y-4">
+                  <span className="text-xs font-bold text-rose-600 tracking-wider block">Category Choose:</span>
+                  
+                  <div className="flex flex-col gap-2">
+                    {Object.keys(PROMPTS_DATABASE).map(cat => (
+                      <button
+                        key={cat}
+                        onClick={() => { handleCategoryChange(cat); synth.playPop(); }}
+                        className={`w-full py-2.5 px-3.5 text-left rounded-xl text-xs font-bold transition-all ${selectedPromptCategory === cat ? curTheme.primary : 'text-rose-700 hover:bg-rose-50/50'}`}
+                      >
+                        🌟 {cat === 'Detaching' ? 'Detaching & Self-Love' : cat === 'SelfDiscovery' ? 'Self-Discovery' : cat} Prompts
+                      </button>
+                    ))}
+                  </div>
+
+                  <hr className="border-rose-100" />
+
+                  {/* Specific Prompt Picker */}
+                  <div className="space-y-2">
+                    <span className="text-[10px] font-bold text-rose-500 uppercase tracking-widest block">Available Questions</span>
+                    <select
+                      value={selectedPrompt}
+                      onChange={(e) => { setSelectedPrompt(e.target.value); synth.playPop(); }}
+                      className="w-full text-xs p-2 border border-rose-200 rounded-xl bg-transparent text-rose-800 focus:outline-none"
+                    >
+                      {PROMPTS_DATABASE[selectedPromptCategory].map((prompt, idx) => (
+                        <option key={idx} value={prompt}>
+                          {prompt.substring(0, 45)}...
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                {/* Center Writing Station Editor */}
+                <div className="md:col-span-2 bg-rose-50/20 p-5 rounded-2xl border border-rose-100 flex flex-col justify-between space-y-4">
+                  <div className="space-y-2">
+                    <span className="text-[10px] font-bold text-white bg-rose-400 px-2 py-0.5 rounded-full inline-block">Active Writing Paper</span>
+                    <blockquote className="font-serif text-sm italic text-rose-700 font-bold border-l-2 border-rose-400 pl-3 py-1 bg-white/75 rounded-r-lg">
+                      "{selectedPrompt}"
+                    </blockquote>
+                    
+                    {/* Rich text writing text box */}
+                    <textarea 
+                      value={journalContent}
+                      onChange={(e) => setJournalContent(e.target.value)}
+                      className="w-full h-44 text-xs p-4 rounded-xl border border-rose-200 focus:outline-none focus:border-rose-400 text-rose-900 bg-white line-leading-relaxed"
+                      placeholder="Pour your heart and logical self-reflection onto this page. Be completely honest..."
+                    />
+                  </div>
+
+                  {/* Mood tracker and save row */}
+                  <div className="flex flex-wrap items-center justify-between gap-3 bg-white/80 p-3 rounded-xl border border-rose-100">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] font-bold text-rose-500">My Mood:</span>
+                      {['🌸 Soft', '🕊️ Peaceful', '💖 Grateful', '🌿 Calm', '🕯️ Tired'].map(mood => (
+                        <button
+                          key={mood}
+                          onClick={() => { setActiveMood(mood); synth.playPop(); }}
+                          className={`px-2 py-1 rounded text-[10px] transition-all ${activeMood === mood ? 'bg-rose-400 text-white font-bold' : 'text-rose-600 bg-rose-50/50 hover:bg-rose-50'}`}
+                        >
+                          {mood}
+                        </button>
+                      ))}
+                    </div>
+
+                    <button
+                      onClick={() => {
+                        if (!journalContent.trim()) return;
+                        const newEntry = {
+                          id: Date.now(),
+                          date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+                          category: selectedPromptCategory,
+                          prompt: selectedPrompt,
+                          content: journalContent,
+                          mood: activeMood
+                        };
+                        setSavedJournalEntries([newEntry, ...savedJournalEntries]);
+                        setJournalContent('');
+                        synth.playChime();
+                      }}
+                      className="py-1.5 px-4 rounded-lg bg-rose-400 hover:bg-rose-500 text-white text-xs font-bold transition-all flex items-center gap-1"
+                    >
+                      <Save className="w-4 h-4" /> Save Entry
+                    </button>
+                  </div>
+                </div>
+
+              </div>
+
+              {/* Saved Journal History Records */}
+              <div className="bg-white/70 p-5 rounded-2xl border border-rose-100">
+                <span className="text-xs font-bold text-rose-600 tracking-wider block mb-3">🕯️ SAVED JOURNAL RECORDS</span>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[300px] overflow-y-auto pr-1">
+                  {savedJournalEntries.map(entry => (
+                    <div key={entry.id} className="bg-rose-50/20 p-4 rounded-xl border border-rose-100 space-y-2">
+                      <div className="flex justify-between items-center text-[10px] text-rose-500 font-bold">
+                        <span>{entry.date} • {entry.category}</span>
+                        <span className="bg-white px-2 py-0.5 rounded-full border border-rose-100">{entry.mood}</span>
+                      </div>
+                      <p className="text-xs font-bold text-rose-800 italic">"{entry.prompt}"</p>
+                      <p className="text-xs text-rose-900 leading-relaxed font-medium bg-white/70 p-2.5 rounded-lg border border-rose-50">{entry.content}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+            </div>
+          )}
+
+          {/* TAB CONTENT: 4. STICKER SHEET BOX */}
+          {currentTab === 'stickers' && (
+            <div className="space-y-6">
+              
+              {/* Header */}
+              <div className="text-center">
+                <span className="text-xl">🎀</span>
+                <h3 className="font-serif text-2xl text-rose-700 inline-block ml-1">Etsy-Ready Sticker Sheet Drawer</h3>
+                <p className="text-xs text-rose-400">Click any aesthetic hand-crafted sticker below to place/peel onto your active planner board!</p>
+              </div>
+
+              {/* Stickers Grid */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">
+                {STICKERS_ASSETS.map(st => (
+                  <div 
+                    key={st.id} 
+                    onClick={() => placeSticker(st.id)}
+                    className="bg-white hover:bg-rose-50 border-2 border-dashed border-rose-100 hover:border-rose-300 rounded-2xl p-4 flex flex-col items-center justify-center gap-2 cursor-pointer transition-all hover:scale-105"
+                  >
+                    <div className="bg-rose-50 p-2 rounded-full border border-rose-100">
+                      {st.svg}
+                    </div>
+                    <span className="text-xs font-bold text-rose-600 font-serif">{st.name}</span>
+                    <span className="text-[9px] text-rose-400 bg-rose-50 px-2 py-0.5 rounded-full font-bold">Tap to Peel</span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Instructions/Interactive Tips */}
+              <div className="bg-rose-50/50 p-4 rounded-2xl border border-rose-100/60 max-w-xl mx-auto space-y-2">
+                <span className="text-xs font-bold text-rose-700 block text-center">💡 Canvas Decoration Tips</span>
+                <ul className="text-xs text-rose-600 leading-relaxed list-disc list-inside space-y-1 font-medium">
+                  <li>Click a sticker on the sheet to place it in the center of the planner workspace.</li>
+                  <li>Click and drag the sticker on the canvas to place it anywhere you like.</li>
+                  <li>Select any active sticker to show controls to resize (+) or remove it.</li>
+                </ul>
+              </div>
+
+            </div>
+          )}
+
+          {/* TAB CONTENT: 5. SELLER CONFIGURATION / Etsy Tool */}
+          {currentTab === 'config' && (
+            <div className="space-y-6 max-w-2xl mx-auto bg-white/95 p-6 rounded-3xl border border-rose-100 shadow-xs">
+              
+              <div className="text-center mb-4">
+                <span className="text-2xl">🧸</span>
+                <h3 className="font-serif text-xl text-rose-700 block font-bold">Etsy Storefront Customization Panel</h3>
+                <p className="text-xs text-rose-400">Customize the layout style of your manifestation digital planners to maximize Etsy sells!</p>
+              </div>
+
+              <div className="space-y-4">
+                
+                {/* 1. Theme Picker */}
+                <div className="space-y-2 bg-rose-50/30 p-4 rounded-xl border border-rose-100">
+                  <span className="text-xs font-bold text-rose-700 block">🌸 Choose Planner Theme Color Palette:</span>
+                  <div className="grid grid-cols-3 gap-2">
+                    {Object.keys(THEMES).map(tName => (
+                      <button
+                        key={tName}
+                        onClick={() => { setTheme(tName); synth.playChime(); }}
+                        className={`py-2 px-3 rounded-lg text-xs font-bold capitalize border transition-all ${theme === tName ? 'bg-white border-rose-400 text-rose-800' : 'bg-white/60 border-rose-150 text-rose-500 hover:bg-white'}`}
+                      >
+                        {tName.replace(/([A-Z])/g, ' $1')}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 2. Etsy Listing Booster Info */}
+                <div className="space-y-2 bg-rose-50/30 p-4 rounded-xl border border-rose-100 text-xs text-rose-700 leading-relaxed font-medium">
+                  <span className="text-xs font-bold text-rose-700 block mb-1">📈 Best Practices for Selling Digital Planners:</span>
+                  <ul className="list-disc list-inside space-y-1">
+                    <li>Include beautiful mockups in your Etsy list with ribbons and cute bears!</li>
+                    <li>Advertise the **custom interactive features** like sound chimes, timers, flashcard flip styles, and movable sticker sets.</li>
+                    <li>Sell preconfigured layouts! Setup your perfect template here and export it using the "Export Layout" button to distribute directly to buyers.</li>
+                  </ul>
+                </div>
+
+                {/* Quick reset option */}
+                <div className="text-center pt-2">
+                  <button 
+                    onClick={() => {
+                      if (confirm("Are you sure you want to reset all configurations to demo defaults?")) {
+                        setTodos([
+                          { id: 1, text: 'Study for Chemistry Midterm', done: false, time: '10:00 AM' },
+                          { id: 2, text: 'Plan Etsy printable layouts', done: true, time: '2:00 PM' }
+                        ]);
+                        setActiveStickers([
+                          { id: 'initial-1', type: 'bow_pink', x: 75, y: 15, scale: 1.2, rot: -10 }
+                        ]);
+                        synth.playChime();
+                      }
+                    }}
+                    className="text-xs text-rose-400 hover:text-rose-600 underline font-semibold cursor-pointer"
+                  >
+                    Reset all interactive data to defaults
+                  </button>
+                </div>
+
+              </div>
+
+            </div>
+          )}
+
+        </div>
+
+      </main>
+
+      {/* Decorative Bottom Credits */}
+      <footer className="text-center mt-12 text-xs text-rose-400 space-y-2">
+        <p className="font-serif italic">"Woman, you totally got this • Shine bright every single day"</p>
+        <p className="text-[10px] opacity-75">All layout designs, prompt databases, and audio elements can be bundled directly inside your Etsy download pack.</p>
+      </footer>
+
+    </div>
+  );
+}
+
